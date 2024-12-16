@@ -85,12 +85,12 @@ date:   2024-06-16 17:50:00
     <th>Original</th>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/original.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/cn_sample/original.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/original_cosyvoice.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/cn_sample/original_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -100,12 +100,12 @@ date:   2024-06-16 17:50:00
     <th>Antifake</th>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/antifake.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/cn_sample/antifake.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/antifake_cosyvoice.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/cn_sample/antifake_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -115,12 +115,12 @@ date:   2024-06-16 17:50:00
     <th>Ours</th>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/ry_adv.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/cn_sample/ry_adv.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/ours_sfm_ws_ref_cosyvoice.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/cn_sample/ours_sfm_ws_ref_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
