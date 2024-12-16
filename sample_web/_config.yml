@@ -1,7 +1,7 @@
 # Setup
 title:        Audio Demo
 tagline:      Adversarial Attack on 0-shot TTS
-baseurl:      "AdvSpeech/sample_web"
+baseurl:      "/AdvSpeech/sample_web"
 url:          "https://yryMax.github.io"
 paginate:     1
 locale:       "en"
