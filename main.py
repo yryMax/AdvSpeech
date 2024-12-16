@@ -22,7 +22,7 @@ def get_envelope(audio, sr=22050):
     return envelope
 
 
-def optimize_input(ssim_layer, audio, strength_weight=0.1, num_steps=10000, lr=0.001, device='cuda',
+def optimize_input(ssim_layer, audio, strength_weight=0.01, num_steps=10000, lr=0.001, device='cuda',
         output=True, sr=22050):
 
     f0, time_stamp = pw.dio(audio.flatten().numpy().astype(np.float64), sr, frame_period=5.0)
@@ -87,11 +87,11 @@ def optimize_input(ssim_layer, audio, strength_weight=0.1, num_steps=10000, lr=0
 if __name__ == '__main__':
 
     # load config file
-    with open('audios/cn_sample/config.yaml') as file:
+    with open('audios/en_sample/config.yaml') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     adv_path = config['prompt']['adv_path']
-
+    print(adv_path)
     sr = config['prompt']['sample_rate']
     audio_prompt = load_wav(config['prompt']['audio_path'], sr)
     reference = load_wav(config['prompt']['reference_path'], sr)
