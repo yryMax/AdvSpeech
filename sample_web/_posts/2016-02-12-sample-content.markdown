@@ -24,12 +24,12 @@ date:   2024-06-16 17:50:00
     <th>Original</th>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_5694.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/en_sample/libri_5694.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_cosyvoice.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/en_sample/libri_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -39,12 +39,12 @@ date:   2024-06-16 17:50:00
     <th>Antifake</th>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_antifake.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/en_sample/libri_antifake.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_antifake_cosyvoice.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/en_sample/libri_antifake_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -54,12 +54,12 @@ date:   2024-06-16 17:50:00
     <th>Ours</th>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_adv.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/en_sample/libri_adv.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_adv_cosyvoice.wav" type="audio/wav">
+        <source src="{{ site.baseurl }}/audios/en_sample/libri_adv_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
