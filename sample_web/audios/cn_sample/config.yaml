@@ -1,0 +1,6 @@
+prompt:
+  audio_path: "audios/cn_sample/ry.wav"
+  reference_path: "audios/cn_sample/ws.wav"
+  text: "欲问后期何日是, 寄书应见雁南征"
+  sample_rate: 22050
+  adv_path: "audios/cn_sample/ry_adv.wav"
