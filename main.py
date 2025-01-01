@@ -62,6 +62,10 @@ def optimize_input(ssim_layer, audio, strength_weight=0.01, num_steps=10000, lr=
 
         loss = ssim_loss + sfm_loss_val * strength_weight
 
+        if not torch.isfinite(loss):
+            print(f"Optimization stopped at step {step} due to invalid loss (NaN or Inf).")
+            break
+
         if len(loss_history) > 0 and loss_history[-1] - loss.item() < no_progress_threshold:
             no_progress_counter += 1
         else:

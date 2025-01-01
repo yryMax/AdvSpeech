@@ -18,11 +18,12 @@ class SNRMetric(Metric):
 
 
     def update(self, pred: torch.Tensor, target: torch.Tensor) -> None:
-
-        assert pred.dim() == target.dim() == 2 and pred.size() == target.size()
+        print(pred.shape, target.shape)
+        assert pred.dim() == target.dim() == 2
 
         pred = pred.squeeze()
         target = target.squeeze()
+        pred, target = align_shape(pred, target)
 
         signal_energy = F.mse_loss(target, torch.zeros_like(target), reduction='mean')
         noise_energy  = F.mse_loss(target, pred, reduction='mean')
@@ -53,16 +54,17 @@ class PESQMetric(Metric):
         self.fs = fs
         self.mode = mode
 
-        # 用于在多次 update 后做平均
         self.add_state("pesq_sum", default=torch.tensor(0., dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_updates", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, pred: torch.Tensor, target: torch.Tensor) -> None:
 
-        assert pred.dim() == target.dim() == 2 and pred.size() == target.size()
+        assert pred.dim() == target.dim() == 2
 
         pred = pred.squeeze()
         target = target.squeeze()
+
+        pred, target = align_shape(pred, target)
 
         ref_wav = target.detach().cpu().numpy().astype('float32')
         deg_wav = pred.detach().cpu().numpy().astype('float32')
@@ -96,10 +98,11 @@ class SECSMetric(Metric):
 
     def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
 
-        assert preds.dim() == target.dim() == 2 and preds.size() == target.size()
+        assert preds.dim() == target.dim() == 2
 
         preds = preds.squeeze(0)
         target = target.squeeze(0)
+        preds, target = align_shape(preds, target)
 
         wav_pred = preds.detach().cpu().squeeze(0).numpy()
         wav_targ = target.detach().cpu().squeeze(0).numpy()

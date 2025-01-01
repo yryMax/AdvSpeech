@@ -44,3 +44,10 @@ def tensor_normalize(x_tensor):
     return x
 
 
+
+def align_shape(audiotensor_1: torch.Tensor, audiotensor_2: torch.Tensor):
+    assert audiotensor_1.dim() == audiotensor_2.dim()
+    min_length = min(audiotensor_1.shape[-1], audiotensor_2.shape[-1])
+    audiotensor_1 = audiotensor_1[..., :min_length]
+    audiotensor_2 = audiotensor_2[..., :min_length]
+    return audiotensor_1, audiotensor_2
