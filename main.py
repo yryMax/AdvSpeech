@@ -91,7 +91,6 @@ if __name__ == '__main__':
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     adv_path = config['prompt']['adv_path']
-    print(adv_path)
     sr = config['prompt']['sample_rate']
     audio_prompt = load_wav(config['prompt']['audio_path'], sr)
     reference = load_wav(config['prompt']['reference_path'], sr)
