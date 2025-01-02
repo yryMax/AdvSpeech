@@ -56,7 +56,6 @@ class AudioDataset(Dataset):
 
 
 if __name__ == '__main__':
-    # 初始化日志记录
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
@@ -70,12 +69,12 @@ if __name__ == '__main__':
     dataset = AudioDataset(root_dir)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
 
-    # 初始化 Metrics
     snr_metric = SNRMetric()
     pesq_metric = PESQMetric()
     secs_metric = SECSMetric()
 
     for i, item in enumerate(tqdm(dataloader, desc="Processing Data")):
+
         source_waveform = item['source_waveform'].squeeze(0)
         ref_waveforms = [ref for ref in item['ref_waveforms']]
         adv_path = item['adv_path'][0]
@@ -84,6 +83,9 @@ if __name__ == '__main__':
 
         index = 0
         for ref_waveform in ref_waveforms:
+            adv_path_with_index = adv_path.replace('.wav', f'_{index}.wav')
+            if os.path.exists(adv_path_with_index):
+                continue
             ref_envelope = get_envelope(ref_waveform, dataset.sample_rate)
 
             assert ref_envelope.shape[1] >= promp_envelope.shape[1], \
@@ -96,8 +98,9 @@ if __name__ == '__main__':
             ssim_layer = SSIMLossLayer(normalized_ref.double().to(dataset.device)).double()
 
             x_adv, loss_history = optimize_input(ssim_layer, source_waveform, device=dataset.device, sr=dataset.sample_rate)
+            if len(loss_history) == 0:
+                continue
 
-            adv_path_with_index = adv_path.replace('.wav', f'_{index}.wav')
             logging.info(f"Saving {adv_path_with_index}" + "...")
             logging.info(f"final loss: {loss_history[-1]}")
             torchaudio.save(adv_path_with_index, x_adv.cpu().float().detach().unsqueeze(0), dataset.sample_rate)

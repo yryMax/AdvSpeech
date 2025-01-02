@@ -5,9 +5,7 @@ from util import *
 from pesq import pesq
 from resemblyzer import preprocess_wav, VoiceEncoder
 
-
 class SNRMetric(Metric):
-
     is_differentiable = False
     higher_is_better = True
 
@@ -15,10 +13,9 @@ class SNRMetric(Metric):
         super().__init__()
         self.add_state("snr_sum", default=torch.tensor(0., dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_updates", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
-
+        self.add_state("sum_of_squares", default=torch.tensor(0., dtype=torch.float), dist_reduce_fx="sum")
 
     def update(self, pred: torch.Tensor, target: torch.Tensor) -> None:
-        print(pred.shape, target.shape)
         assert pred.dim() == target.dim() == 2
 
         pred = pred.squeeze()
@@ -26,7 +23,7 @@ class SNRMetric(Metric):
         pred, target = align_shape(pred, target)
 
         signal_energy = F.mse_loss(target, torch.zeros_like(target), reduction='mean')
-        noise_energy  = F.mse_loss(target, pred, reduction='mean')
+        noise_energy = F.mse_loss(target, pred, reduction='mean')
 
         if noise_energy.item() == 0:
             snr_val = float('inf')
@@ -34,12 +31,16 @@ class SNRMetric(Metric):
             snr_val = 10.0 * torch.log10(signal_energy / noise_energy).item()
 
         self.snr_sum += snr_val
+        self.sum_of_squares += snr_val ** 2
         self.num_updates += 1
 
     def compute(self) -> torch.Tensor:
         if self.num_updates == 0:
             return torch.tensor(0., dtype=torch.float)
-        return self.snr_sum / self.num_updates
+        mean = self.snr_sum / self.num_updates
+        print(mean, self.num_updates)
+        std = torch.sqrt(self.sum_of_squares / self.num_updates - mean ** 2)
+        return mean, std
 
 
 class PESQMetric(Metric):
@@ -56,9 +57,9 @@ class PESQMetric(Metric):
 
         self.add_state("pesq_sum", default=torch.tensor(0., dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_updates", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
+        self.add_state("sum_of_squares", default=torch.tensor(0., dtype=torch.float), dist_reduce_fx="sum")
 
     def update(self, pred: torch.Tensor, target: torch.Tensor) -> None:
-
         assert pred.dim() == target.dim() == 2
 
         pred = pred.squeeze()
@@ -75,29 +76,30 @@ class PESQMetric(Metric):
             raise RuntimeError(f"PESQ calculation failed: {e}")
 
         self.pesq_sum += pesq_score
+        self.sum_of_squares += pesq_score ** 2
         self.num_updates += 1
 
     def compute(self) -> torch.Tensor:
         if self.num_updates == 0:
             return torch.tensor(0., dtype=torch.float)
-        return self.pesq_sum / self.num_updates
+        mean = self.pesq_sum / self.num_updates
+        std = torch.sqrt(self.sum_of_squares / self.num_updates - mean ** 2)
+        return mean, std
 
 
 class SECSMetric(Metric):
-
     is_differentiable = False
     higher_is_better = False
 
     def __init__(self, sr=16000):
-
         super().__init__()
         self.sr = sr
         self.add_state("secs_sum", default=torch.tensor(0., dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_updates", default=torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
+        self.add_state("sum_of_squares", default=torch.tensor(0., dtype=torch.float), dist_reduce_fx="sum")
         self.encoder = VoiceEncoder()
 
     def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
-
         assert preds.dim() == target.dim() == 2
 
         preds = preds.squeeze(0)
@@ -107,19 +109,23 @@ class SECSMetric(Metric):
         wav_pred = preds.detach().cpu().squeeze(0).numpy()
         wav_targ = target.detach().cpu().squeeze(0).numpy()
 
-
         embeds_pred = self.encoder.embed_utterance(preprocess_wav(wav_pred, source_sr=self.sr))
         embeds_targ = self.encoder.embed_utterance(preprocess_wav(wav_targ, source_sr=self.sr))
 
         cosim = np.dot(embeds_targ, embeds_pred) / (np.linalg.norm(embeds_targ) * np.linalg.norm(embeds_pred))
         cosim_t = torch.tensor(cosim, device=preds.device, dtype=torch.float)
+
         self.secs_sum += 1 - cosim_t
+        self.sum_of_squares += (1 - cosim_t) ** 2
         self.num_updates += 1
 
     def compute(self) -> torch.Tensor:
         if self.num_updates == 0:
             return torch.tensor(0., dtype=torch.float)
-        return self.secs_sum / self.num_updates
+        mean = self.secs_sum / self.num_updates
+        std = torch.sqrt(self.sum_of_squares / self.num_updates - mean ** 2)
+        return mean, std
+
 
 
 if __name__ == '__main__':
