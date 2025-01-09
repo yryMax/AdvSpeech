@@ -15,7 +15,7 @@ class AudioDataset(Dataset):
         self.sample_rate = sample_rate
         self.device = device
         self.data = []
-        self.output_suffix = 'advspeech'
+        self.output_suffix = 'advspeech_ssim_only'
 
         for subdir in os.listdir(root_dir):
             subdir_path = os.path.join(root_dir, subdir)
