@@ -3,4 +3,4 @@ prompt:
   reference_path: "audios/en_sample/ref_ws.wav"
   text: "I do not know what it was, but I heard Gladden say, \"Tell General Bragg that I have as keen a scent for Yankees as General Chalmers has.\""
   sample_rate: 22050
-  adv_path: "audios/en_sample/libri_adv_001.wav"
+  adv_path: "audios/en_sample/libri_adv_pooling.wav"
