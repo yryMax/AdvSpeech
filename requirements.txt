@@ -1,0 +1,16 @@
+ipython==8.12.3
+librosa==0.10.2
+matplotlib==3.7.5
+numpy==1.24.4
+numpy==1.24.3
+pandas==2.0.3
+parselmouth==1.1.1
+pesq==0.0.5
+pyworld==0.3.4
+PyYAML==6.0.2
+PyYAML==6.0.2
+Resemblyzer==0.1.4
+torchmetrics==1.5.2
+tqdm==4.67.1
+TTS==0.22.0
+wespeaker==0.0.0

@@ -1,0 +1,23 @@
+name: advspeech
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip
+  - ipython
+  - librosa
+  - matplotlib
+  - numpy
+  - pandas
+  - pesq
+  - pyworld
+  - pyyaml
+  - tqdm
+  - pip:
+      - --index-url https://download.pytorch.org/whl/cu118
+      - torch==2.1.2+cu118
+      - torchvision==0.16.2+cu118
+      - torchaudio==2.1.2+cu118
+      - --index-url https://pypi.org/simple
+      - praat-parselmouth
