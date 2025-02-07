@@ -3,7 +3,7 @@ import yaml
 from acoustics import CheapTrick
 from loss import SSIMLossLayer, SpectralFlatnessLoss
 from util import *
-
+import argparse
 
 
 def get_envelope(audio, sr=22050):
@@ -79,7 +79,7 @@ def optimize_input(ssim_layer, audio, strength_weight=0.01, num_steps=10000, lr=
     return x, loss_history
 
 
-def process_audio_with_ssim(audio_path, ref_path, output_path, sr):
+def process_audio(audio_path, ref_path, output_path, sr):
 
     audio_prompt = load_wav(audio_path, sr)
     reference = load_wav(ref_path, sr)
@@ -102,28 +102,31 @@ def process_audio_with_ssim(audio_path, ref_path, output_path, sr):
 
 if __name__ == '__main__':
 
-    # load config file
-    with open('audios/en_sample/config.yaml') as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
+    parser = argparse.ArgumentParser(description="Process audio using SSIM optimization.")
+    parser.add_argument("--config", help="Path to the configuration YAML file.")
+    parser.add_argument("--input", help="Path to the input audio file.")
+    parser.add_argument("--reference", help="Path to the reference audio file.")
+    parser.add_argument("--output", default="output.wav", help="Path to save the processed audio file.")
+    parser.add_argument("--sr", type=int, default=22050,
+                        help="Sampling rate for processing (default: 22050). Input and reference must have SR >= this value.")
 
-    adv_path = config['prompt']['adv_path']
-    sr = config['prompt']['sample_rate']
-    audio_prompt = load_wav(config['prompt']['audio_path'], sr)
-    reference = load_wav(config['prompt']['reference_path'], sr)
+    args = parser.parse_args()
 
-    promp_envelope = get_envelope(audio_prompt, sr)
-    ref_envelope = get_envelope(reference, sr)
+    if args.config:
+        with open(args.config, 'r') as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
+        input_path = config['prompt']['audio_path']
+        ref_path = config['prompt']['reference_path']
+        output_path = config.get('prompt', {}).get('adv_path', "output.wav")
+        sr = config['prompt'].get('sample_rate', 22050)
+    else:
+        if not args.input or not args.reference:
+            parser.error("Either --config or both --input and --reference must be provided.")
+        input_path = args.input
+        ref_path = args.reference
+        output_path = args.output
+        sr = args.sr
 
-
-    assert ref_envelope.shape[1] >= promp_envelope.shape[1], "Reference audio should be equal or longer than prompt audio"
-
-    ref_envelope = ref_envelope[:, :promp_envelope.shape[1]]
-
-    normalized_ref = tensor_normalize(ref_envelope)
-    ssim_layer = SSIMLossLayer(normalized_ref.double().to('cuda')).double()
-
-    x_adv, loss_history = optimize_input(ssim_layer, audio_prompt, device='cuda', sr=sr)
-
-    torchaudio.save(adv_path, x_adv.cpu().float().detach().unsqueeze(0), sr)
+    process_audio(input_path, ref_path, output_path, sr)
 
 
