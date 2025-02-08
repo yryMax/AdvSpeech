@@ -13,7 +13,7 @@ for dev:
 `conda-lock lock -f environment.yml` -> lock the environment
 
 ### HOW TO USE
-provide the info directly
+if you only want to protect the audio, you could either provide the info directly
 
 `python main.py --input audios/en_sample/libri_5694.wav --reference audios/en_sample/ref_ws.wav`
 
@@ -23,6 +23,9 @@ or use the config
 
 sample audio is hosted on  https://yrymax.github.io/AdvSpeech/sample_web/
 dataset: https://huggingface.co/datasets/Renyi444/AdvSpeech
+
+if you want to see the benchmark, you need you install the env for all the external repositories.
+
 
 
 
