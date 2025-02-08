@@ -2,3 +2,6 @@
 sampled_pair/
 results/
 audios/
+*.pt
+
+antifake_output.wav
