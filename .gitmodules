@@ -1,0 +1,3 @@
+[submodule "external_repos/antifake"]
+	path = external_repos/antifake
+	url = https://github.com/yryMax/AntiFake.git
