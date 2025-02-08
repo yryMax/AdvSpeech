@@ -1,0 +1,3 @@
+[submodule "external_repos/antifake_repo"]
+	path = external_repos/antifake_repo
+	url = https://github.com/WUSTL-CSPL/AntiFake.git
