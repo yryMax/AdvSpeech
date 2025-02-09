@@ -64,6 +64,7 @@ class XTTSSynthesizer(Synthesizer):
         t1.start()
         t2.start()
 
+        exception = False
         try:
             res = subprocess.run(
                 [
@@ -86,6 +87,7 @@ class XTTSSynthesizer(Synthesizer):
             print("Child stdout =", e.stdout)
             print("Child stderr =", e.stderr)
             reader_should_stop.set()
+            exception = True
         finally:
             t1.join()
             t2.join()
@@ -94,6 +96,9 @@ class XTTSSynthesizer(Synthesizer):
                 os.remove(pipe_in)
             if os.path.exists(pipe_out):
                 os.remove(pipe_out)
+
+        if not output_data_list or exception:
+            return None
 
         out_bytes = output_data_list[0] if output_data_list else b""
         buf_out = io.BytesIO(out_bytes)
@@ -107,7 +112,7 @@ class OpenVoiceSynthesizer(Synthesizer):
         path = self.path
 
         pipe_in = tempfile.mktemp(prefix="openvoice_in_", suffix=".wav", dir="/tmp")
-        pipe_out_dir = tempfile.mkdtemp(prefix="openvoice_out_", dir="/tmp")
+        pipe_out = tempfile.mktemp(prefix="openvoice_out_", suffix=".wav", dir="/tmp")
 
         output_data_list = []
         reader_should_stop = threading.Event()
@@ -118,18 +123,17 @@ class OpenVoiceSynthesizer(Synthesizer):
         def reader():
             max_wait_time = 3000
             waited = 0
-            output_file = os.path.join(pipe_out_dir, "output.wav")
-
-            while not os.path.exists(output_file):
+            while not os.path.exists(pipe_out):
                 if reader_should_stop.is_set():
+                    print("Reader thread exiting early due to failure in subprocess.")
                     return
                 time.sleep(0.5)
                 waited += 0.5
                 if waited >= max_wait_time:
+                    print(f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!")
                     return
-
             try:
-                with open(output_file, "rb") as f:
+                with open(pipe_out, 'rb') as f:
                     output_data_list.append(f.read())
             except Exception as e:
                 print(f"Error reading pipe_out file: {e}")
@@ -145,7 +149,7 @@ class OpenVoiceSynthesizer(Synthesizer):
                     "python", "-m", "openvoice_worker",
                     "--ref_audio", pipe_in,
                     "--text", text,
-                    "--output_dir", pipe_out_dir
+                    "--output_dir", pipe_out
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -162,11 +166,10 @@ class OpenVoiceSynthesizer(Synthesizer):
         finally:
             t_writer.join()
             t_reader.join()
-
             if os.path.exists(pipe_in):
                 os.remove(pipe_in)
-            if os.path.exists(pipe_out_dir):
-                shutil.rmtree(pipe_out_dir)
+            if os.path.exists(pipe_out):
+                os.remove(pipe_out)
 
         if not output_data_list or exception_exit:
             return None
@@ -181,5 +184,4 @@ if __name__ == '__main__':
     path = os.path.abspath("../external_repos/OpenVoice")
     synthesizer = OpenVoiceSynthesizer(path, config['effectiveness'], sr)
     output = synthesizer.syn(refaudio)
-    # save the output
     torchaudio.save("output.wav", output, sr, format="wav")

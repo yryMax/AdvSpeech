@@ -10,3 +10,6 @@
 [submodule "external_repos/OpenVoice"]
 	path = external_repos/OpenVoice
 	url = https://github.com/yryMax/OpenVoice
+[submodule "external_repos/CosyVoice"]
+	path = external_repos/CosyVoice
+	url = https://github.com/yryMax/CosyVoice.git
