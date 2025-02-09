@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 from util import *
 
 class AudioDataset(Dataset):
-    def __init__(self, root_dir, sample_rate=22500, device='cuda'):
+    def __init__(self, root_dir, sample_rate=22050, device='cuda'):
         self.sample_rate = sample_rate
         self.device = device
         self.data = []
@@ -28,7 +28,7 @@ class AudioDataset(Dataset):
                     self.data.append({
                         'source_file': source_file,
                         'ref_files': ref_files,
-                        'text': os.path.join(subdir_path, f"{prefix}.normalized.txt"),
+                        'text': os.path.join(subdir_path, f"{prefix}.normalized.txt")
                     })
 
     def __len__(self):
@@ -39,11 +39,12 @@ class AudioDataset(Dataset):
 
         audio_prompt = load_wav(item['source_file'], self.sample_rate)
         references = [load_wav(ref, self.sample_rate) for ref in item['ref_files']]
-
+        speaker = item['source_file'].split('/')[-1].replace('.wav', '')
         return {
             'source_waveform': audio_prompt, # tensor
             'ref_waveforms': references, # list of tensors
-            'text': item['text'] # string
+            'text': item['text'], # string
+            'speaker': speaker, # string
         }
 
 if __name__ == '__main__':

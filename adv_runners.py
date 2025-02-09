@@ -12,6 +12,7 @@ import sys
 
 def advspeech_runner(raw_data, sample_rate):
     audio_prompt = raw_data['source_waveform']
+    # for now only use the first one
     reference = raw_data['ref_waveforms'][0]
     promp_envelope = get_envelope(audio_prompt, sample_rate)
     ref_envelope = get_envelope(reference, sample_rate)
@@ -21,7 +22,7 @@ def advspeech_runner(raw_data, sample_rate):
     normalized_ref = tensor_normalize(ref_envelope)
     ssim_layer = SSIMLossLayer(normalized_ref.double().to('cuda')).double()
     x_adv, loss_history = optimize_input(ssim_layer, audio_prompt, device='cuda', sr=sample_rate)
-    return x_adv
+    return x_adv.float().cpu().unsqueeze(0)
 
 
 def antifake_runner(raw_data, sample_rate):
@@ -101,7 +102,7 @@ def antifake_runner(raw_data, sample_rate):
     out_bytes = output_data_list[0] if output_data_list else b""
     buf_out = io.BytesIO(out_bytes)
     processed_waveform, _ = torchaudio.load(buf_out)
-    print("Processed waveform shape:", processed_waveform.shape)
+
     return processed_waveform
 
 

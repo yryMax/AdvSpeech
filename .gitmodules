@@ -1,3 +1,6 @@
 [submodule "external_repos/antifake"]
 	path = external_repos/antifake
 	url = https://github.com/yryMax/AntiFake.git
+[submodule "external_repos/NISQA"]
+	path = external_repos/NISQA
+	url = https://github.com/gabrielmittag/NISQA.git

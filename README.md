@@ -3,6 +3,7 @@
 
 ### Environment Setup
 for the user:
+`pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118`
 
 ` conda env create -f environment.yml` -> poetry install
 
@@ -25,6 +26,10 @@ sample audio is hosted on  https://yrymax.github.io/AdvSpeech/sample_web/
 dataset: https://huggingface.co/datasets/Renyi444/AdvSpeech
 
 if you want to see the benchmark, you need you install the env for all the external repositories.
+
+-  antifake: https://github.com/WUSTL-CSPL/AntiFake
+-  NISQA: https://github.com/gabrielmittag/NISQA
+
 
 
 

@@ -5,3 +5,5 @@ audios/
 *.pt
 
 antifake_output.wav
+
+adv_speech/
