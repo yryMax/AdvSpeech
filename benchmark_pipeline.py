@@ -34,6 +34,11 @@ class BenchmarkPipeline:
         print(f"SNR: {snr}, PESQ: {pesq}, SECS: {secs}, MOS: {mos}")
         return snr, pesq, secs, mos
 
+    def run_effectiveness(self, config):
+        pass
+
+
+
 if __name__ == '__main__':
     def mock_transform_fn(raw_data, sample_rate):
         # 1d tensor to 1d tensor
