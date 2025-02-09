@@ -8,6 +8,7 @@ import threading
 import subprocess
 import torchaudio
 import torch
+import yaml
 
 class Synthesizer(ABC):
 
@@ -27,7 +28,7 @@ class Synthesizer(ABC):
 
 
 class XTTSSynthesizer(Synthesizer):
-    def syn(self, ref_audio: torch.Tensor, text: str) -> torch.Tensor:
+    def syn(self, ref_audio: torch.Tensor) -> torch.Tensor:
         text = self.config['text']
 
         path = self.path
@@ -58,43 +59,53 @@ class XTTSSynthesizer(Synthesizer):
             except Exception as e:
                 print(f"Error reading pipe_out file: {e}")
 
-            t1 = threading.Thread(target=writer, daemon=True)
-            t2 = threading.Thread(target=reader, daemon=True)
-            t1.start()
-            t2.start()
+        t1 = threading.Thread(target=writer, daemon=True)
+        t2 = threading.Thread(target=reader, daemon=True)
+        t1.start()
+        t2.start()
 
-            try:
-                res = subprocess.run(
-                    [
-                        "conda", "run", "-n", "TTS",
-                        "tts", "--model_name", "tts_models/multilingual/multi-dataset/xtts_v2",
-                        "--text", text,
-                        "--speaker_wav", pipe_in,
-                        "--language_idx", "en",
-                        "--use_cuda", "true",
-                        "--out_path", pipe_out
-                    ],
-                    stdout=sys.stdout,
-                    stderr=sys.stderr,
-                    text=True,
-                    check=True,
-                    cwd="external_repos/TTS"
-                )
-            except subprocess.CalledProcessError as e:
-                print(f"Error: Process failed with exit code {e.returncode}.")
-                print("Child stdout =", e.stdout)
-                print("Child stderr =", e.stderr)
-                reader_should_stop.set()
-            finally:
-                t1.join()
-                t2.join()
+        try:
+            res = subprocess.run(
+                [
+                    "conda", "run", "-n", "TTS",
+                    "tts", "--model_name", "tts_models/multilingual/multi-dataset/xtts_v2",
+                    "--text", text,
+                    "--speaker_wav", pipe_in,
+                    "--language_idx", "en",
+                    "--use_cuda", "true",
+                    "--out_path", pipe_out
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True,
+                cwd=path
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Error: Process failed with exit code {e.returncode}.")
+            print("Child stdout =", e.stdout)
+            print("Child stderr =", e.stderr)
+            reader_should_stop.set()
+        finally:
+            t1.join()
+            t2.join()
 
-                if os.path.exists(pipe_in):
-                    os.remove(pipe_in)
-                if os.path.exists(pipe_out):
-                    os.remove(pipe_out)
+            if os.path.exists(pipe_in):
+                os.remove(pipe_in)
+            if os.path.exists(pipe_out):
+                os.remove(pipe_out)
 
-            out_bytes = output_data_list[0] if output_data_list else b""
-            buf_out = io.BytesIO(out_bytes)
-            processed_waveform, _ = torchaudio.load(buf_out)
-            return processed_waveform
+        out_bytes = output_data_list[0] if output_data_list else b""
+        buf_out = io.BytesIO(out_bytes)
+        processed_waveform, _ = torchaudio.load(buf_out)
+        return processed_waveform
+
+if __name__ == '__main__':
+    refaudio, sr = torchaudio.load("../adv_speech/84_1.wav")
+    config = yaml.load(open("../configs/experiment_config.yaml"), Loader=yaml.FullLoader)
+    # get the abs path
+    path = os.path.abspath("../external_repos/TTS")
+    synthesizer = XTTSSynthesizer(path, config['effectiveness'], sr)
+    output = synthesizer.syn(refaudio)
+    # save the output
+    torchaudio.save("output.wav", output, sr, format="wav")

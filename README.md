@@ -29,6 +29,8 @@ if you want to see the benchmark, you need you install the env for all the exter
 
 -  antifake: https://github.com/WUSTL-CSPL/AntiFake
 -  NISQA: https://github.com/gabrielmittag/NISQA
+-  TTS: https://github.com/coqui-ai/TTS
+-  OpenVoice: https://github.com/myshell-ai/OpenVoice
 
 
 
