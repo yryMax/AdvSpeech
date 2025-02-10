@@ -40,6 +40,7 @@ class BenchmarkPipeline:
         for synth in self.synthesizers:
             similarity = []
             for new_wave, raw_data in self.dataloader:
+
                 syn_audio = synth.syn(new_wave, raw_data['text'])
                 if syn_audio is None:
                     continue
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     cosyvoice = CosyVoiceSynthesizer(os.path.abspath("./external_repos/CosyVoice"), config['effectiveness'], dataset.sample_rate)
     openvoice = OpenVoiceSynthesizer(os.path.abspath("./external_repos/OpenVoice"), config['effectiveness'], dataset.sample_rate)
     xTTS = XTTSSynthesizer(os.path.abspath("./external_repos/TTS"), config['effectiveness'], dataset.sample_rate)
-    pipeline = BenchmarkPipeline(advspeech_speech_dataset, cosyvoice, openvoice, xTTS)
+    pipeline = BenchmarkPipeline(advspeech_speech_dataset,  cosyvoice, openvoice, xTTS)
 
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
