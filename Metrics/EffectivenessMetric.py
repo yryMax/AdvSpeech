@@ -2,6 +2,7 @@ import torch
 import tempfile
 import torchaudio
 import subprocess
+import re
 def wespeaker_runner(audio1: torch.Tensor, audio2: torch.Tensor, sr):
     """
     :param audio1: audio tensor 1
@@ -21,8 +22,8 @@ def wespeaker_runner(audio1: torch.Tensor, audio2: torch.Tensor, sr):
 
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            output = result.stdout.strip()
-            similarity_score = float(output.split()[-1])
+            cleaned = re.sub(r'\x1b\[.*?m', '', result.stdout).strip()
+            similarity_score = float(cleaned)
             return similarity_score
 
         except subprocess.CalledProcessError as e:

@@ -36,7 +36,7 @@ class TransformedAudioDataset(Dataset):
         raw_data = self.base_dataset[idx]
 
         if self.use_cache and idx in self.cache:
-            return self.cache[idx]
+            return self.cache[idx], raw_data
 
         # if the file is contained under directory
         if os.path.exists(self.name + "/" + raw_data['speaker'] + ".wav"):

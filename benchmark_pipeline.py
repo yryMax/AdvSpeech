@@ -41,14 +41,14 @@ class BenchmarkPipeline:
             similarity = []
             for new_wave, raw_data in self.dataloader:
                 print(raw_data['speaker'])
-                syn_audio = synth.syn(new_wave)
+                syn_audio = synth.syn(new_wave, raw_data['text'])
                 if syn_audio is None:
                     continue
                 similarity.append(wespeaker_runner(syn_audio, raw_data['source_waveform'], self.dataset.sample_rate))
             ## remove None and calculate mean/std
             similarity = [x for x in similarity if x is not None]
             similarity = torch.tensor(similarity)
-            res[synth.name] = similarity.mean(), similarity.std()
+            res[synth.name] = (similarity.mean(), similarity.std())
 
         print(res)
         return res
@@ -62,16 +62,16 @@ if __name__ == '__main__':
         # 1d tensor to 1d tensor
         return raw_data['source_waveform']
 
-    root_dir = "/mnt/d/voicedata/LibriTTS/sampled_pair"
+    root_dir = "./trail_ds"
     dataset = AudioDataset(root_dir)
     #transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
     advspeech_speech_dataset = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
     #antifake_speech_dataset = TransformedAudioDataset(dataset, antifake_runner, "antifake")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
-
+    cosyvoice = CosyVoiceSynthesizer(os.path.abspath("./external_repos/CosyVoice"), config['effectiveness'], dataset.sample_rate)
     openvoice = OpenVoiceSynthesizer(os.path.abspath("./external_repos/OpenVoice"), config['effectiveness'], dataset.sample_rate)
     xTTS = XTTSSynthesizer(os.path.abspath("./external_repos/TTS"), config['effectiveness'], dataset.sample_rate)
-    pipeline = BenchmarkPipeline(advspeech_speech_dataset, openvoice, xTTS)
+    pipeline = BenchmarkPipeline(advspeech_speech_dataset, cosyvoice, openvoice, xTTS)
 
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
