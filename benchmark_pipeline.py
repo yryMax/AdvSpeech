@@ -40,7 +40,6 @@ class BenchmarkPipeline:
         for synth in self.synthesizers:
             similarity = []
             for new_wave, raw_data in self.dataloader:
-                print(raw_data['speaker'])
                 syn_audio = synth.syn(new_wave, raw_data['text'])
                 if syn_audio is None:
                     continue
