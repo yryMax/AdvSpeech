@@ -1,9 +1,14 @@
-import torch
 import torch.nn.functional as F
 from torchmetrics import Metric
 from util import *
 from pesq import pesq
 from resemblyzer import preprocess_wav, VoiceEncoder
+import os
+import subprocess
+import pandas as pd
+import re
+from io import StringIO
+
 
 class SNRMetric(Metric):
     is_differentiable = False
@@ -126,6 +131,45 @@ class SECSMetric(Metric):
         std = torch.sqrt(self.sum_of_squares / self.num_updates - mean ** 2)
         return mean, std
 
+def mos_runner(path):
+
+    if not os.path.exists(path):
+        print("files are not saved, cannot calculate MOS")
+        return None, None
+
+    nisqa_dir = "external_repos/NISQA"
+
+    cmd = [
+        "conda", "run", "-n", "nisqa", "python", "run_predict.py",
+        "--mode", "predict_dir",
+        "--pretrained_model", "weights/nisqa.tar",
+        "--data_dir", path
+    ]
+    try:
+        result = subprocess.run(cmd, cwd=nisqa_dir, capture_output=True, text=True, check=True)
+        output = result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] NISQA execution failed: {e}")
+        print(e.stderr)
+        return None, None
+
+    return _parse_nisqa_output(output)
+
+
+def _parse_nisqa_output(output):
+    match = re.search(r"^\s*deg\s+mos_pred\s+noi_pred\s+dis_pred\s+col_pred\s+loud_pred", output, re.MULTILINE)
+    if not match:
+        print("[ERROR] Failed to detect NISQA table in stdout.")
+        return None
+
+    table_start = match.start()
+    table_content = output[table_start:]
+
+    df = pd.read_csv(StringIO(table_content), delim_whitespace=True)
+    mos_mean = df["mos_pred"].mean()
+    mos_std = df["mos_pred"].std()
+
+    return mos_mean, mos_std
 
 
 if __name__ == '__main__':
