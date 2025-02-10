@@ -31,6 +31,8 @@ if you want to see the benchmark, you need you install the env for all the exter
 -  NISQA: https://github.com/gabrielmittag/NISQA
 -  TTS: https://github.com/coqui-ai/TTS
 -  OpenVoice: https://github.com/myshell-ai/OpenVoice
+-  CosyVoice: https://github.com/FunAudioLLM/CosyVoice
+-  Wespeaker: https://github.com/wenet-e2e/wespeaker
 
 
 

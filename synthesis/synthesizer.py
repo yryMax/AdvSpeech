@@ -12,13 +12,14 @@ import yaml
 import shutil
 class Synthesizer(ABC):
 
-    def __init__(self, model_path: str, config: dict, sr):
+    def __init__(self, model_path: str, config: dict, sr, name):
         self.path = model_path
         self.config = config
+        self.name = name
         self.sr = sr
 
     @abstractmethod
-    def syn(self, ref_audio: torch.Tensor, text: str) -> torch.Tensor:
+    def syn(self, ref_audio: torch.Tensor) -> torch.Tensor:
         """
         :param ref_audio: reference audio tensor
         :param text: 转录文本
@@ -28,6 +29,9 @@ class Synthesizer(ABC):
 
 
 class XTTSSynthesizer(Synthesizer):
+    def __init__(self, model_path: str, config: dict, sr):
+        super(XTTSSynthesizer, self).__init__(model_path, config, sr, "XTTS")
+
     def syn(self, ref_audio: torch.Tensor) -> torch.Tensor:
         text = self.config['text']
 
@@ -107,6 +111,10 @@ class XTTSSynthesizer(Synthesizer):
 
 
 class OpenVoiceSynthesizer(Synthesizer):
+
+    def __init__(self, model_path: str, config: dict, sr):
+        super(OpenVoiceSynthesizer, self).__init__(model_path, config, sr, "OpenVoice")
+
     def syn(self, ref_audio: torch.Tensor) -> torch.Tensor:
         text = self.config['text']
         path = self.path
@@ -144,9 +152,10 @@ class OpenVoiceSynthesizer(Synthesizer):
         t_reader.start()
         exception_exit = False
         try:
-            process = subprocess.run(
+            subprocess.run(
                 [
-                    "python", "-m", "openvoice_worker",
+                    "conda", "run", "-n", "openvoice",
+                    "python", "openvoice_worker.py",
                     "--ref_audio", pipe_in,
                     "--text", text,
                     "--output_dir", pipe_out

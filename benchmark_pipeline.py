@@ -2,15 +2,15 @@ from torch.utils.data import DataLoader
 from dataset.transformed_audio_dataset import TransformedAudioDataset
 from Metrics.FidelityMetrics import SNRMetric, PESQMetric, SECSMetric, mos_runner
 from dataset.base_audio_dataset import AudioDataset
-import torchaudio
-import os
-
+from Metrics.EffectivenessMetric import wespeaker_runner
+from synthesis.synthesizer import *
 class BenchmarkPipeline:
-    def __init__(self, dataset: TransformedAudioDataset) -> None:
+    def __init__(self, dataset: TransformedAudioDataset, *synthesizers: Synthesizer) -> None:
         self.dataset = dataset
         self.dataloader = DataLoader(dataset, batch_size=None, shuffle=False)
         self.name = dataset.name
         self.sample_rate = dataset.sample_rate
+        self.synthesizers = list(synthesizers)
 
     def run_fidelity(self):
         snr_metric = SNRMetric()
@@ -35,7 +35,24 @@ class BenchmarkPipeline:
         return snr, pesq, secs, mos
 
     def run_effectiveness(self, config):
-        pass
+        res = {}
+        for synth in self.synthesizers:
+            similarity = []
+            for new_wave, raw_data in self.dataloader:
+                print(raw_data['speaker'])
+                syn_audio = synth.syn(new_wave)
+                if syn_audio is None:
+                    continue
+                similarity.append(wespeaker_runner(syn_audio, raw_data['source_waveform'], self.dataset.sample_rate))
+            ## remove None and calculate mean/std
+            similarity = [x for x in similarity if x is not None]
+            similarity = torch.tensor(similarity)
+            res[synth.name] = similarity.mean(), similarity.std()
+
+        print(res)
+        return res
+
+
 
 
 
@@ -47,5 +64,11 @@ if __name__ == '__main__':
     root_dir = "/mnt/d/voicedata/LibriTTS/sampled_pair"
     dataset = AudioDataset(root_dir)
     transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
-    pipeline = BenchmarkPipeline(transformed_dataset)
-    pipeline.run_fidelity()
+
+    config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
+
+    openvoice = OpenVoiceSynthesizer(os.path.abspath("./external_repos/OpenVoice"), config['effectiveness'], dataset.sample_rate)
+    xTTS = XTTSSynthesizer(os.path.abspath("./external_repos/TTS"), config['effectiveness'], dataset.sample_rate)
+    pipeline = BenchmarkPipeline(transformed_dataset, openvoice, xTTS)
+    pipeline.run_effectiveness(config)
+    #pipeline.run_fidelity()
