@@ -50,5 +50,4 @@ class AudioDataset(Dataset):
 if __name__ == '__main__':
     root_dir = "/mnt/d/voicedata/LibriTTS/sampled_pair"
     dataset = AudioDataset(root_dir)
-    # print 1 sample
     print(dataset[0])

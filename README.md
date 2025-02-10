@@ -34,6 +34,18 @@ if you want to see the benchmark, you need you install the env for all the exter
 -  CosyVoice: https://github.com/FunAudioLLM/CosyVoice
 -  Wespeaker: https://github.com/wenet-e2e/wespeaker
 
+then run `run benchmark_pipeline.py`
+
+### HOW TO CONTRIBUTE TO BENCHMARK
+
+to add a new matrix -> contribute under `Metrics`
+
+to add a new adv method -> add a new method under `adv_runner`
+
+to add a new synthesizer -> add a new class under `synthesizer` that inherits from `Synthesizer`
+
+to add a new experiment -> add a new method under `BenchmarkPipeline`
+
 
 
 

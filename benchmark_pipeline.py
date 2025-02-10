@@ -4,6 +4,7 @@ from Metrics.FidelityMetrics import SNRMetric, PESQMetric, SECSMetric, mos_runne
 from dataset.base_audio_dataset import AudioDataset
 from Metrics.EffectivenessMetric import wespeaker_runner
 from synthesis.synthesizer import *
+from adv_runners import *
 class BenchmarkPipeline:
     def __init__(self, dataset: TransformedAudioDataset, *synthesizers: Synthesizer) -> None:
         self.dataset = dataset
@@ -34,7 +35,7 @@ class BenchmarkPipeline:
         print(f"SNR: {snr}, PESQ: {pesq}, SECS: {secs}, MOS: {mos}")
         return snr, pesq, secs, mos
 
-    def run_effectiveness(self, config):
+    def run_effectiveness(self):
         res = {}
         for synth in self.synthesizers:
             similarity = []
@@ -63,12 +64,14 @@ if __name__ == '__main__':
 
     root_dir = "/mnt/d/voicedata/LibriTTS/sampled_pair"
     dataset = AudioDataset(root_dir)
-    transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
-
+    #transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
+    advspeech_speech_dataset = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
+    #antifake_speech_dataset = TransformedAudioDataset(dataset, antifake_runner, "antifake")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
 
     openvoice = OpenVoiceSynthesizer(os.path.abspath("./external_repos/OpenVoice"), config['effectiveness'], dataset.sample_rate)
     xTTS = XTTSSynthesizer(os.path.abspath("./external_repos/TTS"), config['effectiveness'], dataset.sample_rate)
-    pipeline = BenchmarkPipeline(transformed_dataset, openvoice, xTTS)
-    pipeline.run_effectiveness(config)
-    #pipeline.run_fidelity()
+    pipeline = BenchmarkPipeline(advspeech_speech_dataset, openvoice, xTTS)
+
+    pipeline.run_effectiveness()
+    pipeline.run_fidelity()
