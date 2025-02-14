@@ -9,9 +9,10 @@ for the user:
 
 for dev:
 
-`conda env update --file environment.yml --prune` -> poetry update
+`conda env update --file dev-environment.yml --prune` -> poetry update
 
-`conda-lock lock -f environment.yml` -> lock the environment
+`conda-lock lock -f dev-environment.yml` -> lock the environment
+
 
 ### HOW TO USE
 if you only want to protect the audio, you could either provide the info directly
@@ -45,9 +46,3 @@ to add a new adv method -> add a new method under `adv_runner`
 to add a new synthesizer -> add a new class under `synthesizer` that inherits from `Synthesizer`
 
 to add a new experiment -> add a new method under `BenchmarkPipeline`
-
-
-
-
-
-

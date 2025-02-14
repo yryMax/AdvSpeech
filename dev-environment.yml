@@ -1,0 +1,27 @@
+name: advspeech
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - flake8
+  - mypy
+  - pre-commit
+  - black
+  - isort
+  - black
+  - pip
+  - ipython
+  - librosa
+  - matplotlib
+  - numpy<2
+  - pandas
+  - pesq
+  - pyworld
+  - pyyaml
+  - tqdm
+  - torchmetrics
+  - pip:
+      - praat-parselmouth
+      - resemblyzer
+      - git+https://github.com/wenet-e2e/wespeaker.git

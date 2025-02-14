@@ -1,13 +1,20 @@
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchaudio
-import math
 
 
 class SSIMLossLayer(nn.Module):
-    def __init__(self, reference, channel: int = 1, window_size: int = 11, size_average: bool = True,
-                 device: str = 'cuda'):
+    def __init__(
+        self,
+        reference,
+        channel: int = 1,
+        window_size: int = 11,
+        size_average: bool = True,
+        device: str = "cuda",
+    ):
         super(SSIMLossLayer, self).__init__()
         self.window_size = window_size
         self.size_average = size_average
@@ -19,20 +26,21 @@ class SSIMLossLayer(nn.Module):
         self.reference = reference.to(self.device).unsqueeze(0)
 
         window = self.create_window(window_size, 1.5, channel)
-        self.register_buffer('window', window.to(self.device))
+        self.register_buffer("window", window.to(self.device))
 
     def create_window(self, window_size, sigma, channel):
         coords = torch.arange(window_size, dtype=torch.float32) - window_size // 2
-        gauss = torch.exp(-coords ** 2 / (2 * sigma ** 2))
+        gauss = torch.exp(-(coords**2) / (2 * sigma**2))
         gauss /= gauss.sum()
         _2D_window = gauss.unsqueeze(1) @ gauss.unsqueeze(0)
-        _2D_window = _2D_window.expand(channel, 1, window_size, window_size).contiguous()
+        _2D_window = _2D_window.expand(
+            channel, 1, window_size, window_size
+        ).contiguous()
         return _2D_window
 
     def forward(self, mel_input):
-
         mel_input = mel_input.to(self.device).unsqueeze(0)
-        mel_input = mel_input[:, :, :self.reference.shape[2]]
+        mel_input = mel_input[:, :, : self.reference.shape[2]]
 
         # print(mel_input.shape)
         # print(self.reference.shape)
@@ -40,24 +48,54 @@ class SSIMLossLayer(nn.Module):
         if mel_input.shape != self.reference.shape:
             raise ValueError("Input tensors must have the same shape!")
 
-        mu1 = F.conv2d(mel_input, self.window, padding=self.window_size // 2, groups=self.channel)
-        mu2 = F.conv2d(self.reference, self.window, padding=self.window_size // 2, groups=self.channel)
+        mu1 = F.conv2d(
+            mel_input, self.window, padding=self.window_size // 2, groups=self.channel
+        )
+        mu2 = F.conv2d(
+            self.reference,
+            self.window,
+            padding=self.window_size // 2,
+            groups=self.channel,
+        )
 
         mu1_sq = mu1.pow(2)
         mu2_sq = mu2.pow(2)
         mu1_mu2 = mu1 * mu2
 
-        sigma1_sq = F.conv2d(mel_input * mel_input, self.window, padding=self.window_size // 2,
-                             groups=self.channel) - mu1_sq
-        sigma2_sq = F.conv2d(self.reference * self.reference, self.window, padding=self.window_size // 2,
-                             groups=self.channel) - mu2_sq
-        sigma12 = F.conv2d(mel_input * self.reference, self.window, padding=self.window_size // 2,
-                           groups=self.channel) - mu1_mu2
+        sigma1_sq = (
+            F.conv2d(
+                mel_input * mel_input,
+                self.window,
+                padding=self.window_size // 2,
+                groups=self.channel,
+            )
+            - mu1_sq
+        )
+        sigma2_sq = (
+            F.conv2d(
+                self.reference * self.reference,
+                self.window,
+                padding=self.window_size // 2,
+                groups=self.channel,
+            )
+            - mu2_sq
+        )
+        sigma12 = (
+            F.conv2d(
+                mel_input * self.reference,
+                self.window,
+                padding=self.window_size // 2,
+                groups=self.channel,
+            )
+            - mu1_mu2
+        )
 
-        C1 = 0.01 ** 2
-        C2 = 0.03 ** 2
+        C1 = 0.01**2
+        C2 = 0.03**2
 
-        ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
+        ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / (
+            (mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2)
+        )
 
         if self.size_average:
             return torch.clamp((1 - ssim_map.mean()) / 2, 0, 1)
@@ -66,16 +104,14 @@ class SSIMLossLayer(nn.Module):
 
 
 class MFCCLoss(nn.Module):
-    def __init__(self, sample_rate=22050, n_mfcc=20, n_mels=80, n_fft=1024, hop_length=256):
+    def __init__(
+        self, sample_rate=22050, n_mfcc=20, n_mels=80, n_fft=1024, hop_length=256
+    ):
         super(MFCCLoss, self).__init__()
         self.mfcc_transform = torchaudio.transforms.MFCC(
             sample_rate=sample_rate,
             n_mfcc=n_mfcc,
-            melkwargs={
-                'n_fft': n_fft,
-                'hop_length': hop_length,
-                'n_mels': n_mels
-            }
+            melkwargs={"n_fft": n_fft, "hop_length": hop_length, "n_mels": n_mels},
         )
         self.log_spec_dB_const = 10.0 / math.log(10.0) * math.sqrt(2.0)
 
@@ -83,11 +119,13 @@ class MFCCLoss(nn.Module):
         ref_mfcc = self.mfcc_transform(ref_audio)
         syn_mfcc = self.mfcc_transform(syn_audio)
 
-        assert ref_mfcc.shape == syn_mfcc.shape, "The shape of the reference and synthesized MFCCs must be the same."
+        assert (
+            ref_mfcc.shape == syn_mfcc.shape
+        ), "The shape of the reference and synthesized MFCCs must be the same."
 
         diff = ref_mfcc - syn_mfcc
 
-        diff_per_frame = torch.sqrt(torch.sum(diff ** 2, dim=1))
+        diff_per_frame = torch.sqrt(torch.sum(diff**2, dim=1))
 
         distance = torch.mean(diff_per_frame)
 
@@ -116,8 +154,13 @@ class SpectralFlatnessLoss(nn.Module):
 
         noise = adv_audio - ref_audio
 
-        noise_stft = torch.stft(noise, n_fft=self.n_fft, hop_length=self.hop_length,
-                                window=self.window, return_complex=True)
+        noise_stft = torch.stft(
+            noise,
+            n_fft=self.n_fft,
+            hop_length=self.hop_length,
+            window=self.window,
+            return_complex=True,
+        )
 
         noise_mag = noise_stft.abs() + self.eps
 
@@ -129,10 +172,10 @@ class SpectralFlatnessLoss(nn.Module):
         noise_sfm = noise_geo_mean / noise_arith_mean  # (batch, frames)
         noise_sfm_mean = torch.mean(noise_sfm, dim=1)  # (batch,)
 
-
         loss = torch.mean(torch.abs(noise_sfm_mean - 1.0))
 
         return loss
+
 
 class NormalShapeLoss(nn.Module):
     def __init__(self, eps=1e-8):
@@ -153,26 +196,31 @@ class NormalShapeLoss(nn.Module):
 
 
 class RBF(nn.Module):
-
     def __init__(self, n_kernels=5, mul_factor=2.0, bandwidth=None):
         super().__init__()
-        self.bandwidth_multipliers = mul_factor ** (torch.arange(n_kernels) - n_kernels // 2)
+        self.bandwidth_multipliers = mul_factor ** (
+            torch.arange(n_kernels) - n_kernels // 2
+        )
         self.bandwidth = bandwidth
 
     def get_bandwidth(self, L2_distances):
         if self.bandwidth is None:
             n_samples = L2_distances.shape[0]
-            return L2_distances.data.sum() / (n_samples ** 2 - n_samples)
+            return L2_distances.data.sum() / (n_samples**2 - n_samples)
 
         return self.bandwidth
 
     def forward(self, X):
         L2_distances = torch.cdist(X, X) ** 2
-        return torch.exp(-L2_distances[None, ...] / (self.get_bandwidth(L2_distances) * self.bandwidth_multipliers)[:, None, None]).sum(dim=0)
+        return torch.exp(
+            -L2_distances[None, ...]
+            / (self.get_bandwidth(L2_distances) * self.bandwidth_multipliers)[
+                :, None, None
+            ]
+        ).sum(dim=0)
 
 
 class MMDLoss(nn.Module):
-
     def __init__(self, kernel=RBF()):
         super().__init__()
         self.kernel = kernel

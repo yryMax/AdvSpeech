@@ -1,17 +1,20 @@
-from abc import ABC, abstractmethod
-import os
-import sys
 import io
-import time
+import os
+import shutil
+import subprocess
+import sys
 import tempfile
 import threading
-import subprocess
-import torchaudio
-import torch
-import yaml
-import shutil
-class Synthesizer(ABC):
+import time
+from abc import ABC
+from abc import abstractmethod
 
+import torch
+import torchaudio
+import yaml
+
+
+class Synthesizer(ABC):
     def __init__(self, model_path: str, config: dict, sr, name):
         self.path = model_path
         self.config = config
@@ -33,7 +36,6 @@ class XTTSSynthesizer(Synthesizer):
         super(XTTSSynthesizer, self).__init__(model_path, config, sr, "XTTS")
 
     def syn(self, ref_audio: torch.Tensor, text: str) -> torch.Tensor:
-
         path = self.path
 
         pipe_in = tempfile.mktemp(prefix="xtts_in_", suffix=".wav", dir="/tmp")
@@ -44,6 +46,7 @@ class XTTSSynthesizer(Synthesizer):
 
         def writer():
             torchaudio.save(pipe_in, ref_audio, self.sr, format="wav")
+
         def reader():
             max_wait_time = 3000
             waited = 0
@@ -54,10 +57,12 @@ class XTTSSynthesizer(Synthesizer):
                 time.sleep(0.5)
                 waited += 0.5
                 if waited >= max_wait_time:
-                    print(f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!")
+                    print(
+                        f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!"
+                    )
                     return
             try:
-                with open(pipe_out, 'rb') as f:
+                with open(pipe_out, "rb") as f:
                     output_data_list.append(f.read())
             except Exception as e:
                 print(f"Error reading pipe_out file: {e}")
@@ -71,24 +76,34 @@ class XTTSSynthesizer(Synthesizer):
         try:
             res = subprocess.run(
                 [
-                    "conda", "run", "-n", "TTS",
-                    "tts", "--model_name", "tts_models/multilingual/multi-dataset/xtts_v2",
-                    "--text", text,
-                    "--speaker_wav", pipe_in,
-                    "--language_idx", "en",
-                    "--use_cuda", "true",
-                    "--out_path", pipe_out
+                    "conda",
+                    "run",
+                    "-n",
+                    "TTS",
+                    "tts",
+                    "--model_name",
+                    "tts_models/multilingual/multi-dataset/xtts_v2",
+                    "--text",
+                    text,
+                    "--speaker_wav",
+                    pipe_in,
+                    "--language_idx",
+                    "en",
+                    "--use_cuda",
+                    "true",
+                    "--out_path",
+                    pipe_out,
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 check=True,
-                cwd=path
+                cwd=path,
             )
         except subprocess.CalledProcessError as e:
-            #print(f"Error: Process failed with exit code {e.returncode}.")
-            #print("Child stdout =", e.stdout)
-            #print("Child stderr =", e.stderr)
+            # print(f"Error: Process failed with exit code {e.returncode}.")
+            # print("Child stdout =", e.stdout)
+            # print("Child stderr =", e.stderr)
             reader_should_stop.set()
             exception = True
         finally:
@@ -110,7 +125,6 @@ class XTTSSynthesizer(Synthesizer):
 
 
 class OpenVoiceSynthesizer(Synthesizer):
-
     def __init__(self, model_path: str, config: dict, sr):
         super(OpenVoiceSynthesizer, self).__init__(model_path, config, sr, "OpenVoice")
 
@@ -136,10 +150,12 @@ class OpenVoiceSynthesizer(Synthesizer):
                 time.sleep(0.5)
                 waited += 0.5
                 if waited >= max_wait_time:
-                    print(f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!")
+                    print(
+                        f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!"
+                    )
                     return
             try:
-                with open(pipe_out, 'rb') as f:
+                with open(pipe_out, "rb") as f:
                     output_data_list.append(f.read())
             except Exception as e:
                 print(f"Error reading pipe_out file: {e}")
@@ -152,17 +168,24 @@ class OpenVoiceSynthesizer(Synthesizer):
         try:
             subprocess.run(
                 [
-                    "conda", "run", "-n", "openvoice",
-                    "python", "openvoice_worker.py",
-                    "--ref_audio", pipe_in,
-                    "--text", text,
-                    "--output_dir", pipe_out
+                    "conda",
+                    "run",
+                    "-n",
+                    "openvoice",
+                    "python",
+                    "openvoice_worker.py",
+                    "--ref_audio",
+                    pipe_in,
+                    "--text",
+                    text,
+                    "--output_dir",
+                    pipe_out,
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 check=True,
-                cwd=path
+                cwd=path,
             )
         except subprocess.CalledProcessError as e:
             print(f"Error: Process failed with exit code {e.returncode}.")
@@ -185,12 +208,13 @@ class OpenVoiceSynthesizer(Synthesizer):
         processed_waveform, sr = torchaudio.load(buf_out)
         return processed_waveform
 
+
 class CosyVoiceSynthesizer(Synthesizer):
     def __init__(self, model_path: str, config: dict, sr):
         super(CosyVoiceSynthesizer, self).__init__(model_path, config, sr, "CosyVoice")
 
     def syn(self, ref_audio: torch.Tensor, text: str) -> torch.Tensor:
-        ref_text = self.config['text']
+        ref_text = self.config["text"]
 
         path = self.path
 
@@ -202,6 +226,7 @@ class CosyVoiceSynthesizer(Synthesizer):
 
         def writer():
             torchaudio.save(pipe_in, ref_audio, self.sr, format="wav")
+
         def reader():
             max_wait_time = 3000
             waited = 0
@@ -212,10 +237,12 @@ class CosyVoiceSynthesizer(Synthesizer):
                 time.sleep(0.5)
                 waited += 0.5
                 if waited >= max_wait_time:
-                    print(f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!")
+                    print(
+                        f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!"
+                    )
                     return
             try:
-                with open(pipe_out, 'rb') as f:
+                with open(pipe_out, "rb") as f:
                     output_data_list.append(f.read())
             except Exception as e:
                 print(f"Error reading pipe_out file: {e}")
@@ -229,18 +256,26 @@ class CosyVoiceSynthesizer(Synthesizer):
         try:
             res = subprocess.run(
                 [
-                    "conda", "run", "-n", "cosyvoice2",
-                    "python", "cosyvoice_worker.py",
-                    "--ref_audio", pipe_in,
-                    "--text", text,
-                    "--output_dir", pipe_out,
-                    "--prompt_text", ref_text
+                    "conda",
+                    "run",
+                    "-n",
+                    "cosyvoice2",
+                    "python",
+                    "cosyvoice_worker.py",
+                    "--ref_audio",
+                    pipe_in,
+                    "--text",
+                    text,
+                    "--output_dir",
+                    pipe_out,
+                    "--prompt_text",
+                    ref_text,
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 check=True,
-                cwd=path
+                cwd=path,
             )
         except subprocess.CalledProcessError as e:
             print(f"Error: Process failed with exit code {e.returncode}.")
@@ -264,10 +299,14 @@ class CosyVoiceSynthesizer(Synthesizer):
         buf_out = io.BytesIO(out_bytes)
         processed_waveform, _ = torchaudio.load(buf_out)
         return processed_waveform
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     refaudio, sr = torchaudio.load("../adv_speech/2086_1.wav")
-    config = yaml.load(open("../configs/experiment_config.yaml"), Loader=yaml.FullLoader)
+    config = yaml.load(
+        open("../configs/experiment_config.yaml"), Loader=yaml.FullLoader
+    )
     path = os.path.abspath("../external_repos/OpenVoice")
-    synthesizer = OpenVoiceSynthesizer(path, config['effectiveness'], sr)
+    synthesizer = OpenVoiceSynthesizer(path, config["effectiveness"], sr)
     output = synthesizer.syn(refaudio)
     torchaudio.save("output.wav", output, sr, format="wav")
