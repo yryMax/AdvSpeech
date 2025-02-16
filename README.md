@@ -3,10 +3,13 @@
 
 ### Environment Setup
 for the user:
-`pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118`
 
-` conda env create -f environment.yml` -> poetry install
-
+```pycon
+git submodule update --init --recursive
+conda env create -f environment.yml
+conda activate advspeech
+pip3 install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
 for dev:
 
 `conda env update --file dev-environment.yml --prune` -> poetry update

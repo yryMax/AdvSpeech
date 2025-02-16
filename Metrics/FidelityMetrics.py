@@ -40,15 +40,16 @@ class SNRMetric(Metric):
 
         pred = pred.squeeze()
         target = target.squeeze()
-        pred, target = align_shape(pred, target)
 
-        signal_energy = F.mse_loss(target, torch.zeros_like(target), reduction="mean")
-        noise_energy = F.mse_loss(target, pred, reduction="mean")
+        signal_energy = torch.mean(target**2)
+        noise_energy = torch.mean((target - pred) ** 2)
 
         if noise_energy.item() == 0:
             snr_val = float("inf")
+        elif signal_energy.item() == 0:
+            snr_val = -float("inf")
         else:
-            snr_val = 10.0 * torch.log10(signal_energy / noise_energy).item()
+            snr_val = 10.0 * torch.log10(signal_energy / noise_energy)
 
         self.snr_sum += snr_val
         self.sum_of_squares += snr_val**2
@@ -57,10 +58,11 @@ class SNRMetric(Metric):
     def compute(self) -> torch.Tensor:
         if self.num_updates == 0:
             return torch.tensor(0.0, dtype=torch.float)
-        mean = self.snr_sum / self.num_updates
-        print(mean, self.num_updates)
-        std = torch.sqrt(self.sum_of_squares / self.num_updates - mean**2)
-        return mean, std
+
+        mean_snr = self.snr_sum / self.num_updates
+        std_snr = torch.sqrt(self.sum_of_squares / self.num_updates - mean_snr**2)
+
+        return mean_snr, std_snr
 
 
 class PESQMetric(Metric):

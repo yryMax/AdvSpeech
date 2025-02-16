@@ -1,4 +1,5 @@
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from adv_runners import *
 from dataset.base_audio_dataset import AudioDataset
@@ -25,9 +26,9 @@ class BenchmarkPipeline:
         snr_metric = SNRMetric()
         pesq_metric = PESQMetric()
         secs_metric = SECSMetric()
-
+        print("Running fidelity metrics")
         mos = mos_runner(self.dataset.cache_path)
-        for new_wave, raw_data in self.dataloader:
+        for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
             snr_metric.update(new_wave, raw_data["source_waveform"])
 
             secs_metric.update(new_wave, raw_data["source_waveform"])
@@ -47,14 +48,31 @@ class BenchmarkPipeline:
         print(f"SNR: {snr}, PESQ: {pesq}, SECS: {secs}, MOS: {mos}")
         return snr, pesq, secs, mos
 
-    def run_effectiveness(self):
+    def run_effectiveness(self, preserve_audio=True):
         res = {}
+        print("Running effectiveness metrics")
         for synth in self.synthesizers:
+            if preserve_audio:
+                # make dir
+                os.makedirs("./" + self.dataset.name + "/" + synth.name, exist_ok=True)
+            print(f"Running {synth.name}")
             similarity = []
-            for new_wave, raw_data in self.dataloader:
+            for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
                 syn_audio = synth.syn(new_wave, raw_data["text"])
                 if syn_audio is None:
                     continue
+                if preserve_audio:
+                    torchaudio.save(
+                        "./"
+                        + self.dataset.name
+                        + "/"
+                        + synth.name
+                        + "/"
+                        + raw_data["speaker"]
+                        + ".wav",
+                        syn_audio,
+                        self.dataset.sample_rate,
+                    )
                 similarity.append(
                     wespeaker_runner(
                         syn_audio, raw_data["source_waveform"], self.dataset.sample_rate
@@ -78,11 +96,11 @@ if __name__ == "__main__":
     root_dir = "./trail_ds"
     dataset = AudioDataset(root_dir)
     # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
-    # advspeech_speech_dataset = TransformedAudioDataset(
-    #    dataset, advspeech_runner, "adv_speech"
-    # )
+    advspeech_speech_dataset = TransformedAudioDataset(
+        dataset, advspeech_runner, "adv_speech"
+    )
     # antifake_speech_dataset = TransformedAudioDataset(dataset, antifake_runner, "antifake")
-    pop = TransformedAudioDataset(dataset, pop_runner, "pop")
+    # pop = TransformedAudioDataset(dataset, pop_runner, "pop")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
     cosyvoice = CosyVoiceSynthesizer(
         os.path.abspath("./external_repos/CosyVoice"),
@@ -99,7 +117,7 @@ if __name__ == "__main__":
         config["effectiveness"],
         dataset.sample_rate,
     )
-    pipeline = BenchmarkPipeline(pop, cosyvoice, openvoice, xTTS)
+    pipeline = BenchmarkPipeline(advspeech_speech_dataset, cosyvoice, xTTS)
 
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
