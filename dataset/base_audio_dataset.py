@@ -54,11 +54,15 @@ class AudioDataset(Dataset):
         audio_prompt = load_wav(item["source_file"], self.sample_rate)
         references = [load_wav(ref, self.sample_rate) for ref in item["ref_files"]]
         speaker = item["source_file"].split("/")[-1].replace(".wav", "")
+        # load text
+        with open(item["text"], "r") as f:
+            text = f.read()
         return {
             "source_waveform": audio_prompt,  # tensor
             "ref_waveforms": references,  # list of tensors
-            "text": item["text"],  # string
+            "text": text,  # string
             "speaker": speaker,  # string
+            "path": item["source_file"],  # string
         }
 
 

@@ -32,7 +32,8 @@ def advspeech_runner(raw_data, sample_rate):
     return x_adv.float().cpu().unsqueeze(0)
 
 
-def antifake_runner(raw_data, sample_rate):
+def antifake_runner(base_data_dict, sample_rate):
+    raw_data = base_data_dict["source_waveform"]
     if raw_data.dim() == 1:
         raw_data = raw_data.unsqueeze(0)
     if raw_data.size(0) > 1:
@@ -105,6 +106,90 @@ def antifake_runner(raw_data, sample_rate):
     buf_out = io.BytesIO(out_bytes)
     processed_waveform, _ = torchaudio.load(buf_out)
 
+    return processed_waveform
+
+
+def pop_runner(base_data_dict, sample_rate):
+    pipe_in = tempfile.mktemp(prefix="pop_in_", suffix=".txt", dir="/tmp")
+    pipe_out = tempfile.mktemp(prefix="pop_out_", suffix=".wav", dir="/tmp")
+
+    output_data_list = []
+    reader_should_stop = threading.Event()
+    path = "../../" + base_data_dict["path"][2:]
+    filelist_str = path + "|0|" + base_data_dict["text"]
+
+    def writer():
+        # write the string to the pipe_in txt file
+        with open(pipe_in, "w") as f:
+            f.write(filelist_str)
+
+    def reader():
+        max_wait_time = 3000
+        waited = 0
+        while not os.path.exists(pipe_out):
+            if reader_should_stop.is_set():
+                print("Reader thread exiting early due to failure in subprocess.")
+                return
+            time.sleep(0.5)
+            waited += 0.5
+            if waited >= max_wait_time:
+                print(
+                    f"Error: pipe_out file '{pipe_out}' not found after {max_wait_time} seconds!"
+                )
+                return
+        try:
+            with open(pipe_out, "rb") as f:
+                output_data_list.append(f.read())
+        except Exception as e:
+            print(f"Error reading pipe_out file: {e}")
+
+    t1 = threading.Thread(target=writer, daemon=True)
+    t2 = threading.Thread(target=reader, daemon=True)
+    t1.start()
+    t2.start()
+    project_path = "external_repos/Pivotal_Objective_Perturbation"
+    exception = False
+    try:
+        res = subprocess.run(
+            [
+                "conda",
+                "run",
+                "-n",
+                "cosyvoice2",
+                "python",
+                "protect_one.py",
+                "--filelist",
+                pipe_in,
+                "--output_path",
+                pipe_out,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True,
+            cwd=project_path,
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Process failed with exit code {e.returncode}.")
+        print("Child stdout =", e.stdout)
+        print("Child stderr =", e.stderr)
+        reader_should_stop.set()
+        exception = True
+    finally:
+        t1.join()
+        t2.join()
+
+        if os.path.exists(pipe_in):
+            os.remove(pipe_in)
+        if os.path.exists(pipe_out):
+            os.remove(pipe_out)
+
+    if not output_data_list or exception:
+        return None
+
+    out_bytes = output_data_list[0] if output_data_list else b""
+    buf_out = io.BytesIO(out_bytes)
+    processed_waveform, _ = torchaudio.load(buf_out)
     return processed_waveform
 
 

@@ -13,3 +13,6 @@
 [submodule "external_repos/CosyVoice"]
 	path = external_repos/CosyVoice
 	url = https://github.com/yryMax/CosyVoice.git
+[submodule "external_repos/Pivotal_Objective_Perturbation"]
+	path = external_repos/Pivotal_Objective_Perturbation
+	url = https://github.com/yryMax/Pivotal_Objective_Perturbation
