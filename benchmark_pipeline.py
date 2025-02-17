@@ -97,12 +97,9 @@ if __name__ == "__main__":
     root_dir = "./trail_ds"
     dataset = AudioDataset(root_dir)
     # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
-    # advspeech_speech_dataset = TransformedAudioDataset(
-    #    dataset, advspeech_runner, "adv_speech"
-    #
-    # )
+    advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
     # antifake_speech_dataset = TransformedAudioDataset(dataset, antifake_runner, "antifake")
-    pop = TransformedAudioDataset(dataset, pop_runner, "pop")
+    # pop = TransformedAudioDataset(dataset, pop_runner, "pop")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
     cosyvoice = CosyVoiceSynthesizer(
         os.path.abspath("./external_repos/CosyVoice"),
@@ -119,7 +116,7 @@ if __name__ == "__main__":
         config["effectiveness"],
         dataset.sample_rate,
     )
-    pipeline = BenchmarkPipeline(pop, cosyvoice, xTTS)
+    pipeline = BenchmarkPipeline(advspeech, cosyvoice, xTTS)
 
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
