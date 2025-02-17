@@ -104,9 +104,9 @@ class XTTSSynthesizer(Synthesizer):
                 cwd=path,
             )
         except subprocess.CalledProcessError as e:
-            # print(f"Error: Process failed with exit code {e.returncode}.")
-            # print("Child stdout =", e.stdout)
-            # print("Child stderr =", e.stderr)
+            print(f"Error: Process failed with exit code {e.returncode}.")
+            print("Child stdout =", e.stdout)
+            print("Child stderr =", e.stderr)
             reader_should_stop.set()
             exception = True
         finally:
