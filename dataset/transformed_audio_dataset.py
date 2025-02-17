@@ -1,5 +1,6 @@
 import os
 
+import torch
 import torchaudio
 from torch.utils.data import Dataset
 
@@ -51,14 +52,18 @@ class TransformedAudioDataset(Dataset):
                 raw_data, sample_rate=self.base_dataset.sample_rate
             )
 
-        assert new_wave.shape[0] == 1
+        min_len = min(new_wave.shape[-1], raw_data["source_waveform"].shape[-1])
+        threshold = 10
+        assert (
+            min_len + threshold > new_wave.shape[-1]
+            and min_len + threshold > raw_data["source_waveform"].shape[-1]
+        )
 
-        new_wave = new_wave[:, : raw_data["source_waveform"].shape[-1]]
-        raw_data["source_waveform"] = raw_data["source_waveform"][
-            :, : new_wave.shape[-1]
-        ]
-
-        if self.use_cache:
+        new_wave = new_wave[:, :min_len]
+        raw_data["source_waveform"] = raw_data["source_waveform"][:, :min_len]
+        if self.use_cache and not os.path.exists(
+            self.name + "/" + raw_data["speaker"] + ".wav"
+        ):
             self.cache[idx] = new_wave
             # save the new wave
             torchaudio.save(

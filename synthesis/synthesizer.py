@@ -13,6 +13,8 @@ import torch
 import torchaudio
 import yaml
 
+from util import *
+
 
 class Synthesizer(ABC):
     def __init__(self, model_path: str, config: dict, sr, name):
@@ -43,6 +45,7 @@ class XTTSSynthesizer(Synthesizer):
 
         output_data_list = []
         reader_should_stop = threading.Event()
+        print(self.sr)
 
         def writer():
             torchaudio.save(pipe_in, ref_audio, self.sr, format="wav")
@@ -84,7 +87,7 @@ class XTTSSynthesizer(Synthesizer):
                     "--model_name",
                     "tts_models/multilingual/multi-dataset/xtts_v2",
                     "--text",
-                    text,
+                    self.config["text"],
                     "--speaker_wav",
                     pipe_in,
                     "--language_idx",
@@ -120,7 +123,7 @@ class XTTSSynthesizer(Synthesizer):
 
         out_bytes = output_data_list[0] if output_data_list else b""
         buf_out = io.BytesIO(out_bytes)
-        processed_waveform, _ = torchaudio.load(buf_out)
+        processed_waveform = load_wav(buf_out, self.sr)
         return processed_waveform
 
 
@@ -177,7 +180,7 @@ class OpenVoiceSynthesizer(Synthesizer):
                     "--ref_audio",
                     pipe_in,
                     "--text",
-                    text,
+                    self.config["text"],
                     "--output_dir",
                     pipe_out,
                 ],
@@ -205,7 +208,7 @@ class OpenVoiceSynthesizer(Synthesizer):
             return None
 
         buf_out = io.BytesIO(output_data_list[0])
-        processed_waveform, sr = torchaudio.load(buf_out)
+        processed_waveform = load_wav(buf_out, self.sr)
         return processed_waveform
 
 
@@ -265,11 +268,11 @@ class CosyVoiceSynthesizer(Synthesizer):
                     "--ref_audio",
                     pipe_in,
                     "--text",
-                    text,
+                    ref_text,
                     "--output_dir",
                     pipe_out,
                     "--prompt_text",
-                    ref_text,
+                    text,
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -297,7 +300,7 @@ class CosyVoiceSynthesizer(Synthesizer):
 
         out_bytes = output_data_list[0] if output_data_list else b""
         buf_out = io.BytesIO(out_bytes)
-        processed_waveform, _ = torchaudio.load(buf_out)
+        processed_waveform = load_wav(buf_out, self.sr)
         return processed_waveform
 
 

@@ -14,6 +14,10 @@ from util import *
 
 
 class SNRMetric(Metric):
+    """
+    https://colab.research.google.com/github/hrtlacek/SNR/blob/master/SNR.ipynb
+    """
+
     is_differentiable = False
     higher_is_better = True
 
@@ -50,6 +54,7 @@ class SNRMetric(Metric):
             snr_val = -float("inf")
         else:
             snr_val = 10.0 * torch.log10(signal_energy / noise_energy)
+            print(snr_val)
 
         self.snr_sum += snr_val
         self.sum_of_squares += snr_val**2

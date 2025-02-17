@@ -60,6 +60,7 @@ class BenchmarkPipeline:
             for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
                 syn_audio = synth.syn(new_wave, raw_data["text"])
                 if syn_audio is None:
+                    print("Synthesis failed" + synth.name + " " + raw_data["speaker"])
                     continue
                 if preserve_audio:
                     torchaudio.save(

@@ -29,6 +29,7 @@ def advspeech_runner(raw_data, sample_rate):
     x_adv, loss_history = optimize_input(
         ssim_layer, audio_prompt, device="cuda", sr=sample_rate
     )
+    assert audio_prompt.size() == x_adv.size()
     return x_adv.float().cpu().unsqueeze(0)
 
 
