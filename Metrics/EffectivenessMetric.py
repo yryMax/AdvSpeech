@@ -43,7 +43,7 @@ def wespeaker_runner(audio1: torch.Tensor, audio2: torch.Tensor, sr):
         return model_wespeaker.compute_similarity(f1.name, f2.name)
 
 
-def WER_runner(audio: torch.Tensor, text_target: str, sr):
+def wer_runner(audio: torch.Tensor, text_target: str, sr):
     """
     Args:
         audio1: audio tensor
@@ -67,7 +67,7 @@ def WER_runner(audio: torch.Tensor, text_target: str, sr):
 if __name__ == "__main__":
     audio1, sr = torchaudio.load("../adv_speech/6319_2.wav")
     print(
-        WER_runner(
+        wer_runner(
             audio1,
             "My young plants require heat, or they would not live; and the pots we are kept in protect us from those cruel wire worms who delight to destroy our roots.",
             sr,

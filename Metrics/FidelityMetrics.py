@@ -190,7 +190,6 @@ def mos_runner(path):
         return None, None
 
     nisqa_dir = "external_repos/NISQA"
-
     cmd = [
         "conda",
         "run",

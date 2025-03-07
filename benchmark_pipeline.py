@@ -4,6 +4,7 @@ from tqdm import tqdm
 from adv_runners import *
 from dataset.base_audio_dataset import AudioDataset
 from dataset.transformed_audio_dataset import TransformedAudioDataset
+from Metrics.EffectivenessMetric import wer_runner
 from Metrics.EffectivenessMetric import wespeaker_runner
 from Metrics.FidelityMetrics import mos_runner
 from Metrics.FidelityMetrics import PESQMetric
@@ -27,7 +28,7 @@ class BenchmarkPipeline:
         pesq_metric = PESQMetric()
         secs_metric = SECSMetric()
         print("Running fidelity metrics")
-        mos = mos_runner(self.dataset.cache_path)
+
         for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
             snr_metric.update(new_wave, raw_data["source_waveform"])
 
@@ -45,8 +46,8 @@ class BenchmarkPipeline:
         pesq = pesq_metric.compute()
         secs = secs_metric.compute()
 
-        print(f"SNR: {snr}, PESQ: {pesq}, SECS: {secs}, MOS: {mos}")
-        return snr, pesq, secs, mos
+        print(f"SNR: {snr}, PESQ: {pesq}, SECS: {secs}")
+        return snr, pesq, secs
 
     def run_effectiveness(self, preserve_audio=True):
         res = {}
@@ -56,7 +57,10 @@ class BenchmarkPipeline:
                 # make dir
                 os.makedirs("./" + self.dataset.name + "/" + synth.name, exist_ok=True)
             print(f"Running {synth.name}")
+            folder = "./" + self.dataset.name + "/" + synth.name
+            moss = mos_runner(os.path.abspath(folder))
             similarity = []
+            wer = []
             for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
                 syn_audio = synth.syn(new_wave, raw_data["text"])
                 if syn_audio is None:
@@ -79,10 +83,17 @@ class BenchmarkPipeline:
                         syn_audio, raw_data["source_waveform"], self.dataset.sample_rate
                     )
                 )
+                wer.append(wer_runner(syn_audio, synth.config["text"], synth.sr))
             ## remove None and calculate mean/std
             similarity = [x for x in similarity if x is not None]
             similarity = torch.tensor(similarity)
-            res[synth.name] = (similarity.mean(), similarity.std())
+            wer = torch.tensor(wer)
+            moss = torch.tensor(moss)
+            res[synth.name] = {
+                "ss: ": (similarity.mean(), similarity.std()),
+                "wer: ": (wer.mean(), wer.std()),
+                "mos: ": moss,
+            }
 
         print(res)
         return res
@@ -106,17 +117,19 @@ if __name__ == "__main__":
         config["effectiveness"],
         dataset.sample_rate,
     )
+    """
     openvoice = OpenVoiceSynthesizer(
         os.path.abspath("./external_repos/OpenVoice"),
         config["effectiveness"],
         dataset.sample_rate,
     )
+    """
     xTTS = XTTSSynthesizer(
         os.path.abspath("./external_repos/TTS"),
         config["effectiveness"],
         dataset.sample_rate,
     )
-    pipeline = BenchmarkPipeline(advspeech, cosyvoice, xTTS)
 
+    pipeline = BenchmarkPipeline(advspeech, cosyvoice, xTTS)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
