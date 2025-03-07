@@ -105,7 +105,7 @@ def antifake_runner(base_data_dict, sample_rate):
 
     out_bytes = output_data_list[0] if output_data_list else b""
     buf_out = io.BytesIO(out_bytes)
-    processed_waveform, _ = torchaudio.load(buf_out)
+    processed_waveform, sr = torchaudio.load(buf_out)
 
     return processed_waveform
 

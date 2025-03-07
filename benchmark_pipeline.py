@@ -58,7 +58,7 @@ class BenchmarkPipeline:
                 os.makedirs("./" + self.dataset.name + "/" + synth.name, exist_ok=True)
             print(f"Running {synth.name}")
             folder = "./" + self.dataset.name + "/" + synth.name
-            moss = mos_runner(os.path.abspath(folder))
+
             similarity = []
             wer = []
             for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
@@ -84,11 +84,13 @@ class BenchmarkPipeline:
                     )
                 )
                 wer.append(wer_runner(syn_audio, synth.config["text"], synth.sr))
+                moss = mos_runner(os.path.abspath(folder))
             ## remove None and calculate mean/std
             similarity = [x for x in similarity if x is not None]
             similarity = torch.tensor(similarity)
             wer = torch.tensor(wer)
             moss = torch.tensor(moss)
+
             res[synth.name] = {
                 "ss: ": (similarity.mean(), similarity.std()),
                 "wer: ": (wer.mean(), wer.std()),
@@ -108,8 +110,10 @@ if __name__ == "__main__":
     root_dir = "./trail_ds"
     dataset = AudioDataset(root_dir)
     # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
-    advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
-    # antifake_speech_dataset = TransformedAudioDataset(dataset, antifake_runner, "antifake")
+    # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
+    antifake_speech_dataset = TransformedAudioDataset(
+        dataset, antifake_runner, "antifake"
+    )
     # pop = TransformedAudioDataset(dataset, pop_runner, "pop")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
     cosyvoice = CosyVoiceSynthesizer(
@@ -130,6 +134,6 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
-    pipeline = BenchmarkPipeline(advspeech, cosyvoice, xTTS)
+    pipeline = BenchmarkPipeline(antifake_speech_dataset, cosyvoice, xTTS)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
