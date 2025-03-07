@@ -37,6 +37,7 @@ if you want to see the benchmark, you need you install the env for all the exter
 -  OpenVoice: https://github.com/myshell-ai/OpenVoice
 -  CosyVoice: https://github.com/FunAudioLLM/CosyVoice
 -  Wespeaker: https://github.com/wenet-e2e/wespeaker
+-  Wenet: https://github.com/wenet-e2e/wenet
 
 then run `run benchmark_pipeline.py`
 
