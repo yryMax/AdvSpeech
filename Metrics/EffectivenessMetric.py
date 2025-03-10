@@ -56,6 +56,7 @@ def wer_runner(audio: torch.Tensor, text_target: str, sr):
         torchaudio.save(f.name, audio, sr, format="wav")
 
         text = model_asr.transcribe(f.name)["text"].replace("▁", " ")
+        print(text)
         return wer(
             text_target,
             text,
@@ -65,7 +66,7 @@ def wer_runner(audio: torch.Tensor, text_target: str, sr):
 
 
 if __name__ == "__main__":
-    audio1, sr = torchaudio.load("../adv_speech/6319_2.wav")
+    audio1, sr = torchaudio.load("../0_PerSPEC_64.wav")
     print(
         wer_runner(
             audio1,

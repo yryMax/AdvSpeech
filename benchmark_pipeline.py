@@ -2,6 +2,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from adv_runners import *
+from advspeech_v2 import advspeechv2_runner
 from dataset.base_audio_dataset import AudioDataset
 from dataset.transformed_audio_dataset import TransformedAudioDataset
 from Metrics.EffectivenessMetric import wer_runner
@@ -111,10 +112,11 @@ if __name__ == "__main__":
     dataset = AudioDataset(root_dir)
     # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
     # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
-    antifake_speech_dataset = TransformedAudioDataset(
-        dataset, antifake_runner, "antifake"
-    )
+    # antifake_speech_dataset = TransformedAudioDataset(
+    #    dataset, antifake_runner, "antifake"
+    # )
     # pop = TransformedAudioDataset(dataset, pop_runner, "pop")
+    advspeech_v2 = TransformedAudioDataset(dataset, advspeechv2_runner, "adv_speech_v2")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
     cosyvoice = CosyVoiceSynthesizer(
         os.path.abspath("./external_repos/CosyVoice"),
@@ -134,6 +136,6 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
-    pipeline = BenchmarkPipeline(antifake_speech_dataset, cosyvoice, xTTS)
+    pipeline = BenchmarkPipeline(advspeech_v2, cosyvoice, xTTS)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
