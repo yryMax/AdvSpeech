@@ -115,8 +115,8 @@ if __name__ == "__main__":
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
-    # pop = TransformedAudioDataset(dataset, pop_runner, "pop")
-    advspeech_v2 = TransformedAudioDataset(dataset, advspeechv2_runner, "adv_speech_v2")
+    safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
+    # advspeech_v2 = TransformedAudioDataset(dataset, advspeechv2_runner, "adv_speech_v2")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
     cosyvoice = CosyVoiceSynthesizer(
         os.path.abspath("./external_repos/CosyVoice"),
@@ -136,6 +136,6 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
-    pipeline = BenchmarkPipeline(advspeech_v2, cosyvoice, xTTS)
+    pipeline = BenchmarkPipeline(safespeech, cosyvoice, xTTS)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
