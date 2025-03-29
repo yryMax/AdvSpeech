@@ -9,8 +9,6 @@ tokenizer.train()
 
 libri_long = s3tokenizer.load_audio("libri_long.wav").cuda()
 
-print()
-
 
 def optimize_input_representation_v2(
     x, strength=0.01, num_steps=500, lr=0.001, psy_weight=0.1, output=True
