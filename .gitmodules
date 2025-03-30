@@ -19,3 +19,6 @@
 [submodule "external_repos/SafeSpeech"]
 	path = external_repos/SafeSpeech
 	url = https://github.com/yryMax/SafeSpeech.git
+[submodule "external_repos/Spark-TTS"]
+	path = external_repos/Spark-TTS
+	url = https://github.com/yryMax/Spark-TTS.git
