@@ -24,4 +24,4 @@ wenet
 
 safespeech/
 
-audio_tokenizer/
+audio_tokenizer_ckpt/
