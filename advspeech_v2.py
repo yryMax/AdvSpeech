@@ -22,6 +22,7 @@ wav2vec2 = Wav2Vec2Model.from_pretrained(
 
 wav2vec2.config.output_hidden_states = True
 
+print("Loading encoder...")
 encoder_model_dict = torch.load(
     "./audio_tokenizer_ckpt" + "/semantic_tokenizer.bin",
     map_location=torch.device("cuda"),
@@ -120,7 +121,7 @@ def optimize_input_representation_v2(
 
         loss = torch.nn.functional.mse_loss(token_x, token_ref)
         if scaling != 0:
-            loss += (10**scaling) * meldiff(mels, mel_ref)
+            loss += (10**scaling) * meldiff(mel, mel_ref)
         psy_loss = percloss(x_transformed.cuda(), original_x.cuda(), 16000)
         loss += psy_weight * psy_loss
 
@@ -142,8 +143,18 @@ def advspeechv2_runner(raw_data, sample_rate):
     # resample to 16000
     resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)
     audio_prompt_16k = resampler(audio_prompt).squeeze(0)
+
+    # x_adv, _ = optimize_input_representation_v2(
+    #    audio_prompt_16k, strength=0.05, num_steps=2000, psy_weight=0.1, output=False
+    # )
+
     x_adv, _ = optimize_input_representation_v2(
-        audio_prompt_16k, strength=0.05, num_steps=2000, psy_weight=0.1, output=False
+        audio_prompt_16k,
+        strength=0.1,
+        num_steps=1500,
+        psy_weight=0.0,
+        output=True,
+        scaling=-1,
     )
     resampler_back = torchaudio.transforms.Resample(
         orig_freq=16000, new_freq=sample_rate
@@ -155,9 +166,9 @@ if __name__ == "__main__":
     import torchaudio
     from util import load_wav
 
-    audio = load_wav("./trail_ds/5694/5694_1.wav", 16000).to("cuda")
+    audio = load_wav("./sampled_pair/84/84_2.wav", 16000).to("cuda")
     advspeech, _ = optimize_input_representation_v2(
-        audio[0], strength=0.05, num_steps=2000, psy_weight=0.1, output=False
+        audio[0], strength=0.1, num_steps=1500, psy_weight=0.0, output=True, scaling=-1
     )
     print(advspeech.shape)
     torchaudio.save("adv.wav", advspeech.cpu().unsqueeze(0), 16000)

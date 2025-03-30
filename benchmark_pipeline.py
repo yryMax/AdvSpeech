@@ -2,6 +2,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from adv_runners import *
+from advspeech_v2 import advspeechv2_runner
 from dataset.base_audio_dataset import AudioDataset
 from dataset.transformed_audio_dataset import TransformedAudioDataset
 from Metrics.EffectivenessMetric import wer_runner
@@ -114,27 +115,35 @@ if __name__ == "__main__":
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
-    safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
-    # advspeech_v2 = TransformedAudioDataset(dataset, advspeechv2_runner, "adv_speech_v2")
+    # safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
+    advspeech_v2 = TransformedAudioDataset(dataset, advspeechv2_runner, "adv_speech_v2")
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
+    """
     cosyvoice = CosyVoiceSynthesizer(
         os.path.abspath("./external_repos/CosyVoice"),
         config["effectiveness"],
         dataset.sample_rate,
     )
-    """
+
     openvoice = OpenVoiceSynthesizer(
         os.path.abspath("./external_repos/OpenVoice"),
         config["effectiveness"],
         dataset.sample_rate,
     )
-    """
+
     xTTS = XTTSSynthesizer(
         os.path.abspath("./external_repos/TTS"),
         config["effectiveness"],
         dataset.sample_rate,
     )
+    """
 
-    pipeline = BenchmarkPipeline(safespeech, cosyvoice, xTTS)
+    sparktts = SparkTTSSynthesizer(
+        os.path.abspath("./external_repos/Spark-TTS"),
+        config["effectiveness"],
+        dataset.sample_rate,
+    )
+
+    pipeline = BenchmarkPipeline(advspeech_v2, sparktts)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
