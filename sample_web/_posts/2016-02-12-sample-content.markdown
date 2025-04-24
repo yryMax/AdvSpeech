@@ -24,12 +24,12 @@ The newest solution, it's white box(for now) and based on the gradient, we bench
     <th>Unprotected</th>
     <td>
       <audio controls>
-        <source src="/audios/V2_Spark/84_1.wav" type="audio/wav">
+        <source src="./audios/V2_Spark/84_1.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/V2_Spark/GT_syn.wav" type="audio/wav">
+        <source src="./audios/V2_Spark/GT_syn.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -39,12 +39,12 @@ The newest solution, it's white box(for now) and based on the gradient, we bench
     <th>Ours</th>
     <td>
       <audio controls>
-        <source src="/audios/V2_Spark/adv424200.wav" type="audio/wav">
+        <source src="./audios/V2_Spark/adv424200.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/V2_Spark/adv424200_syn_spark.wav" type="audio/wav">
+        <source src="./audios/V2_Spark/adv424200_syn_spark.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -69,12 +69,12 @@ The newest solution, it's white box(for now) and based on the gradient, we bench
     <th>Unprotected</th>
     <td>
       <audio controls>
-        <source src="/audios/V2_cosyvoice/2277_1.wav" type="audio/wav">
+        <source src="./audios/V2_cosyvoice/2277_1.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/V2_cosyvoice/2277_1_syn_GT.wav" type="audio/wav">
+        <source src="./audios/V2_cosyvoice/2277_1_syn_GT.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -84,12 +84,12 @@ The newest solution, it's white box(for now) and based on the gradient, we bench
     <th>Ours</th>
     <td>
       <audio controls>
-        <source src="/audios/V2_cosyvoice/2277_1_adv.wav" type="audio/wav">
+        <source src="./audios/V2_cosyvoice/2277_1_adv.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/V2_cosyvoice/2277_1_syn.wav" type="audio/wav">
+        <source src="./audios/V2_cosyvoice/2277_1_syn.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -117,12 +117,12 @@ v1 is a black box solution based on speech envelope. The goal is to shadow the o
     <th>Original</th>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_5694.wav" type="audio/wav">
+        <source src="./audios/en_sample/libri_5694.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_cosyvoice.wav" type="audio/wav">
+        <source src="./audios/en_sample/libri_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -132,12 +132,12 @@ v1 is a black box solution based on speech envelope. The goal is to shadow the o
     <th>Antifake</th>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_antifake.wav" type="audio/wav">
+        <source src="./audios/en_sample/libri_antifake.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_antifake_cosyvoice.wav" type="audio/wav">
+        <source src="./audios/en_sample/libri_antifake_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -147,12 +147,12 @@ v1 is a black box solution based on speech envelope. The goal is to shadow the o
     <th>Ours</th>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_adv.wav" type="audio/wav">
+        <source src="./audios/en_sample/libri_adv.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_adv_cosyvoice.wav" type="audio/wav">
+        <source src="./audios/en_sample/libri_adv_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -178,12 +178,12 @@ v1 is a black box solution based on speech envelope. The goal is to shadow the o
     <th>Original</th>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/original.wav" type="audio/wav">
+        <source src="./audios/cn_sample/original.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/original_cosyvoice.wav" type="audio/wav">
+        <source src="./audios/cn_sample/original_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -193,12 +193,12 @@ v1 is a black box solution based on speech envelope. The goal is to shadow the o
     <th>Antifake</th>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/antifake.wav" type="audio/wav">
+        <source src="./audios/cn_sample/antifake.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/antifake_cosyvoice.wav" type="audio/wav">
+        <source src="./audios/cn_sample/antifake_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -208,12 +208,12 @@ v1 is a black box solution based on speech envelope. The goal is to shadow the o
     <th>Ours</th>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/ry_adv.wav" type="audio/wav">
+        <source src="./audios/cn_sample/ry_adv.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/cn_sample/ours_sfm_ws_ref_cosyvoice.wav" type="audio/wav">
+        <source src="./audios/cn_sample/ours_sfm_ws_ref_cosyvoice.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
