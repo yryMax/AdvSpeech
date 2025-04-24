@@ -1,0 +1,21 @@
+exclude:
+  - external_repos/**
+source: sample_web
+# Setup
+title:        Audio Demo
+tagline:      Adversarial Attack on 0-shot TTS
+baseurl:      ""
+paginate:     1
+locale:       "en"
+
+# About/contact
+author:
+  name:       Renyi Yang
+  url:        https://github.com/yryMax
+
+# Gems
+gems:
+  - jekyll-paginate
+
+#Others
+markdown: kramdown
