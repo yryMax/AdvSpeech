@@ -69,6 +69,10 @@ class BenchmarkPipeline:
                 syn_audio = synth.syn(new_wave, raw_data["text"])
                 if syn_audio is None:
                     print("Synthesis failed" + synth.name + " " + raw_data["speaker"])
+                    wer.append(1.0)
+                    wil.append(1.0)
+                    cer.append(1.0)
+                    bleu.append(0.0)
                     continue
                 if preserve_audio:
                     torchaudio.save(
