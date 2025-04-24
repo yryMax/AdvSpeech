@@ -4,6 +4,7 @@
 [submodule "external_repos/NISQA"]
 	path = external_repos/NISQA
 	url = https://github.com/gabrielmittag/NISQA.git
+	update = none
 [submodule "external_repos/TTS"]
 	path = external_repos/TTS
 	url = https://github.com/coqui-ai/TTS.git
