@@ -1,7 +1,7 @@
 .idea/
 sampled_pair/
 results/
-audios/
+audios
 *.pt
 
 antifake_output.wav
