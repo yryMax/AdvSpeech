@@ -4,7 +4,7 @@ title: "Audio Samples Demo"
 date:   2024-06-16 17:50:00
 ---
 # AdvSpeech V2
-the newest solution, it's white box(for now) and based on the gradient, we benchmarked it on Cosyvoice and Spark-TTS.
+The newest solution, it's white box(for now) and based on the gradient, we benchmarked it on Cosyvoice and Spark-TTS.
 ### Spark-TTS
 <table>
 
@@ -24,12 +24,12 @@ the newest solution, it's white box(for now) and based on the gradient, we bench
     <th>Unprotected</th>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_5694.wav" type="audio/wav">
+        <source src="/audios/V2_Spark/84_1.wav" type="audio/wav">
       </audio>
     </td>
     <td>
       <audio controls>
-        <source src="/audios/en_sample/libri_cosyvoice.wav" type="audio/wav">
+        <source src="/audios/V2_Spark/GT_syn.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
@@ -45,6 +45,51 @@ the newest solution, it's white box(for now) and based on the gradient, we bench
     <td>
       <audio controls>
         <source src="/audios/V2_Spark/adv424200_syn_spark.wav" type="audio/wav">
+      </audio>
+    </td>
+  </tr>
+</table>
+
+### Cosyvoice
+<table>
+
+  <tr>
+    <th></th>
+    <th>Speech Prompt</th>
+    <th>Synthetic</th>
+  </tr>
+
+  <tr>
+    <th></th>
+    <th>Then she walked and sang to it, until Hanson, disturbed in his reading, came and took it.</th>
+    <th>Though wise men at their end know dark is right, Because their words had forked no lightning they Do not go gentle into that good night.</th>
+  </tr>
+
+  <tr>
+    <th>Unprotected</th>
+    <td>
+      <audio controls>
+        <source src="/audios/V2_cosyvoice/2277_1.wav" type="audio/wav">
+      </audio>
+    </td>
+    <td>
+      <audio controls>
+        <source src="/audios/V2_cosyvoice/2277_1_syn_GT.wav" type="audio/wav">
+      </audio>
+    </td>
+  </tr>
+
+
+  <tr>
+    <th>Ours</th>
+    <td>
+      <audio controls>
+        <source src="/audios/V2_cosyvoice/2277_1_adv.wav" type="audio/wav">
+      </audio>
+    </td>
+    <td>
+      <audio controls>
+        <source src="/audios/V2_cosyvoice/2277_1_syn.wav" type="audio/wav">
       </audio>
     </td>
   </tr>
