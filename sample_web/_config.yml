@@ -1,3 +1,6 @@
+exclude:
+  - external_repos/**
+source: sample_web
 # Setup
 title:        Audio Demo
 tagline:      Adversarial Attack on 0-shot TTS
@@ -16,6 +19,3 @@ gems:
 
 #Others
 markdown: kramdown
-
-exclude:
-  - external_repos/**
