@@ -1,11 +1,10 @@
 .idea/
 sampled_pair/
 results/
-audios
+audios/
 *.pt
 
 antifake_output.wav
-
 adv_speech/
 
 trail_ds/5895/
