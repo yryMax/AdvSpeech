@@ -58,10 +58,13 @@ class BenchmarkPipeline:
                 # make dir
                 os.makedirs("./" + self.dataset.name + "/" + synth.name, exist_ok=True)
             print(f"Running {synth.name}")
-            folder = "./" + self.dataset.name + "/" + synth.name
+            # folder = "./" + self.dataset.name + "/" + synth.name
 
-            similarity = []
+            # similarity = []
             wer = []
+            wil = []
+            cer = []
+            bleu = []
             for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
                 syn_audio = synth.syn(new_wave, raw_data["text"])
                 if syn_audio is None:
@@ -79,23 +82,32 @@ class BenchmarkPipeline:
                         syn_audio,
                         self.dataset.sample_rate,
                     )
-                similarity.append(
-                    wespeaker_runner(
-                        syn_audio, raw_data["source_waveform"], self.dataset.sample_rate
-                    )
-                )
-                wer.append(wer_runner(syn_audio, synth.config["text"], synth.sr))
-                moss = mos_runner(os.path.abspath(folder))
+                # similarity.append(
+                #    wespeaker_runner(
+                #        syn_audio, raw_data["source_waveform"], self.dataset.sample_rate
+                #    )
+                # )
+                correctness = wer_runner(syn_audio, synth.config["text"], synth.sr)
+                wer.append(correctness["wer"])
+                wil.append(correctness["wil"])
+                cer.append(correctness["cer"])
+                bleu.append(correctness["bleu"])
+                # wer.append(wer_runner(syn_audio, synth.config["text"], synth.sr))
+                # moss = mos_runner(os.path.abspath(folder))
             ## remove None and calculate mean/std
-            similarity = [x for x in similarity if x is not None]
-            similarity = torch.tensor(similarity)
+            # similarity = [x for x in similarity if x is not None]
+            # similarity = torch.tensor(similarity)
             wer = torch.tensor(wer)
-            moss = torch.tensor(moss)
+            wil = torch.tensor(wil)
+            cer = torch.tensor(cer)
+            bleu = torch.tensor(bleu)
+            # moss = torch.tensor(moss)
 
             res[synth.name] = {
-                "ss: ": (similarity.mean(), similarity.std()),
                 "wer: ": (wer.mean(), wer.std()),
-                "mos: ": moss,
+                "wil: ": (wil.mean(), wil.std()),
+                "cer: ": (cer.mean(), cer.std()),
+                "bleu: ": (bleu.mean(), bleu.std()),
             }
 
         print(res)
@@ -109,16 +121,18 @@ if __name__ == "__main__":
         return raw_data["source_waveform"]
 
     root_dir = "./sampled_pair"
-    dataset = AudioDataset(root_dir)
-    # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "raw")
+    dataset = AudioDataset(root_dir, sample_rate=16000)
+    transformed_dataset = TransformedAudioDataset(
+        dataset, mock_transform_fn, "spark_advspeechv2"
+    )
     # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
     # safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
-    advspeech_v2 = TransformedAudioDataset(
-        dataset, advspeechv2_runner, "adv_speech_spark08"
-    )
+    # advspeech_v2 = TransformedAudioDataset(
+    #    dataset, advspeechv2_runner, "adv_speech_spark08"
+    # )
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
     """
     cosyvoice = CosyVoiceSynthesizer(
@@ -146,6 +160,6 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
-    pipeline = BenchmarkPipeline(advspeech_v2, sparktts)
+    pipeline = BenchmarkPipeline(transformed_dataset, sparktts)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()

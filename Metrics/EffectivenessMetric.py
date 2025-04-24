@@ -1,7 +1,7 @@
-import re
-import subprocess
 import tempfile
 
+import evaluate
+import regex
 import torch
 import torchaudio
 import wespeaker
@@ -23,9 +23,17 @@ wer_standardize_contiguous = Compose(
     ]
 )
 
+
+def norm_tok(s: str):
+    s = s.lower()
+    s = regex.sub(r"\p{P}+", " ", s)
+    return s.strip().split()
+
+
 model_wespeaker = wespeaker.load_model("english")
 model_wespeaker.set_device("cuda:0")
 model_asr = wenet.load_model("english")
+bleu_metric = evaluate.load("google_bleu")
 
 
 def wespeaker_runner(audio1: torch.Tensor, audio2: torch.Tensor, sr):
@@ -57,16 +65,40 @@ def wer_runner(audio: torch.Tensor, text_target: str, sr):
 
         text = model_asr.transcribe(f.name)["text"].replace("▁", " ")
         print(text)
-        return wer(
+        sentence_bleu_score = bleu_metric.compute(
+            predictions=[text],
+            references=[[text_target]],
+            tokenizer=norm_tok,
+        )["google_bleu"]
+        _wer = wer(
             text_target,
             text,
             truth_transform=wer_standardize_contiguous,
             hypothesis_transform=wer_standardize_contiguous,
         )
+        _wil = wil(
+            text_target,
+            text,
+            truth_transform=wer_standardize_contiguous,
+            hypothesis_transform=wer_standardize_contiguous,
+        )
+        _cer = cer(
+            text_target,
+            text,
+            truth_transform=wer_standardize_contiguous,
+            hypothesis_transform=wer_standardize_contiguous,
+        )
+        res = {
+            "wer": _wer,
+            "wil": _wil,
+            "cer": _cer,
+            "bleu": sentence_bleu_score,
+        }
+        return res
 
 
 if __name__ == "__main__":
-    audio1, sr = torchaudio.load("../0_PerSPEC_64.wav")
+    audio1, sr = torchaudio.load("../qwq.wav")
     print(
         wer_runner(
             audio1,
