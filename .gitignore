@@ -25,3 +25,7 @@ wenet
 safespeech/
 
 audio_tokenizer_ckpt/
+
+adv_speech_spark/
+
+adv_speech_v22/

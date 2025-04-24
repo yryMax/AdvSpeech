@@ -392,7 +392,11 @@ class SparkTTSSynthesizer(Synthesizer):
 
         out_bytes = output_data_list[0] if output_data_list else b""
         buf_out = io.BytesIO(out_bytes)
-        processed_waveform = load_wav(buf_out, self.sr)
+        speech, sample_rate = torchaudio.load(buf_out)
+        speech = speech.mean(dim=0, keepdim=True)
+        processed_waveform = torchaudio.transforms.Resample(
+            orig_freq=sample_rate, new_freq=self.sr
+        )(speech)
         return processed_waveform
 
 

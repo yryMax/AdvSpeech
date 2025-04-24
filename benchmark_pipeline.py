@@ -108,15 +108,17 @@ if __name__ == "__main__":
         # 1d tensor to 1d tensor
         return raw_data["source_waveform"]
 
-    root_dir = "./trail_ds"
+    root_dir = "./sampled_pair"
     dataset = AudioDataset(root_dir)
-    # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "adv_speech")
+    # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "raw")
     # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
     # safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
-    advspeech_v2 = TransformedAudioDataset(dataset, advspeechv2_runner, "adv_speech_v2")
+    advspeech_v2 = TransformedAudioDataset(
+        dataset, advspeechv2_runner, "adv_speech_spark08"
+    )
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
     """
     cosyvoice = CosyVoiceSynthesizer(

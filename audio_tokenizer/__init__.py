@@ -2,6 +2,7 @@ import os
 
 import torch
 
+from .factorized_vector_quantize import FactorizedVectorQuantize
 from .feat_encoder import Encoder
 
 
@@ -51,6 +52,17 @@ encoder_model = Encoder(
     sample_ratios=[1, 1],
 ).to("cuda")
 
+
+vq = FactorizedVectorQuantize(
+    input_dim=1024,
+    codebook_size=8192,
+    codebook_dim=8,
+    commitment=0.25,
+    codebook_loss_weight=2.0,
+    use_l2_normlize=True,
+    threshold_ema_dead_code=0.2,
+).to("cuda")
+
 custom_processor = CustomWav2Vec2Processor()
 
-__all__ = ["encoder_model", "custom_processor"]
+__all__ = ["encoder_model", "custom_processor", "vq"]
