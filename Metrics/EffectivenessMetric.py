@@ -5,6 +5,7 @@ import regex
 import torch
 import torchaudio
 import wespeaker
+import whisper
 from jiwer import *
 
 import wenet
@@ -30,18 +31,20 @@ def norm_tok(s: str):
     return s.strip().split()
 
 
-model_wespeaker = wespeaker.load_model("english")
-model_wespeaker.set_device("cuda:0")
-model_asr = wenet.load_model("english")
+# model_wespeaker.set_device("cuda:0")
+# model_asr = wenet.load_model("english")
 bleu_metric = evaluate.load("google_bleu")
+model_asr = whisper.load_model("large")
 
 
 def wespeaker_runner(audio1: torch.Tensor, audio2: torch.Tensor, sr):
     """
+    ***: Deprecated!!!!!!!!!!!
     :param audio1: audio tensor 1
     :param audio2: audio tensor 2
     :return: wespeaker score
     """
+    model_wespeaker = wespeaker.load_model("english")
     with tempfile.NamedTemporaryFile(
         suffix=".wav", delete=True
     ) as f1, tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as f2:
@@ -63,11 +66,11 @@ def wer_runner(audio: torch.Tensor, text_target: str, sr):
 
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as f:
         torchaudio.save(f.name, audio, sr, format="wav")
-        if audio.shape[-1] < min_duration * sr:
-            text = ""
-        else:
-            text = model_asr.transcribe(f.name)["text"].replace("▁", " ")
+        res = model_asr.transcribe(f.name, language="en", task="transcribe")
+        text = res["text"]
         print(text)
+        # print("REF:", wer_standardize_contiguous(text_target))
+        # print("HYP:", wer_standardize_contiguous(text))
         sentence_bleu_score = bleu_metric.compute(
             predictions=[text],
             references=[[text_target]],
@@ -85,16 +88,9 @@ def wer_runner(audio: torch.Tensor, text_target: str, sr):
             truth_transform=wer_standardize_contiguous,
             hypothesis_transform=wer_standardize_contiguous,
         )
-        _cer = cer(
-            text_target,
-            text,
-            truth_transform=wer_standardize_contiguous,
-            hypothesis_transform=wer_standardize_contiguous,
-        )
         res = {
             "wer": _wer,
             "wil": _wil,
-            "cer": _cer,
             "bleu": sentence_bleu_score,
         }
         return res

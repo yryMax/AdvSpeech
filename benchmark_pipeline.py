@@ -63,15 +63,14 @@ class BenchmarkPipeline:
             # similarity = []
             wer = []
             wil = []
-            cer = []
             bleu = []
             for new_wave, raw_data in tqdm(self.dataloader, desc="Loading Data"):
                 syn_audio = synth.syn(new_wave, raw_data["text"])
+                print("processing " + synth.name + " " + raw_data["speaker"])
                 if syn_audio is None:
                     print("Synthesis failed" + synth.name + " " + raw_data["speaker"])
                     wer.append(1.0)
                     wil.append(1.0)
-                    cer.append(1.0)
                     bleu.append(0.0)
                     continue
                 if preserve_audio:
@@ -94,7 +93,6 @@ class BenchmarkPipeline:
                 correctness = wer_runner(syn_audio, synth.config["text"], synth.sr)
                 wer.append(correctness["wer"])
                 wil.append(correctness["wil"])
-                cer.append(correctness["cer"])
                 bleu.append(correctness["bleu"])
                 # wer.append(wer_runner(syn_audio, synth.config["text"], synth.sr))
                 # moss = mos_runner(os.path.abspath(folder))
@@ -103,14 +101,12 @@ class BenchmarkPipeline:
             # similarity = torch.tensor(similarity)
             wer = torch.tensor(wer)
             wil = torch.tensor(wil)
-            cer = torch.tensor(cer)
             bleu = torch.tensor(bleu)
             # moss = torch.tensor(moss)
 
             res[synth.name] = {
                 "wer: ": (wer.mean(), wer.std()),
                 "wil: ": (wil.mean(), wil.std()),
-                "cer: ": (cer.mean(), cer.std()),
                 "bleu: ": (bleu.mean(), bleu.std()),
             }
 
@@ -125,15 +121,15 @@ if __name__ == "__main__":
         return raw_data["source_waveform"]
 
     root_dir = "./sampled_pair"
-    dataset = AudioDataset(root_dir, sample_rate=22050)
+    dataset = AudioDataset(root_dir)  # 22050
     # transformed_dataset = TransformedAudioDataset(
     #    dataset, mock_transform_fn, "spark_advspeechv2"
     # )
-    advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech_v2")
+    # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech_v2")
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
-    # safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
+    safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
     # advspeech_v2 = TransformedAudioDataset(
     #    dataset, advspeechv2_runner, "adv_speech_spark08"
     # )
@@ -164,6 +160,6 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
-    pipeline = BenchmarkPipeline(advspeech, cosyvoice)
+    pipeline = BenchmarkPipeline(safespeech, sparktts)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
