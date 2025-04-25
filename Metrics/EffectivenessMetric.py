@@ -59,11 +59,14 @@ def wer_runner(audio: torch.Tensor, text_target: str, sr):
 
     Returns: word error rate
     """
+    min_duration = 0.15  # 150ms
 
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as f:
         torchaudio.save(f.name, audio, sr, format="wav")
-
-        text = model_asr.transcribe(f.name)["text"].replace("▁", " ")
+        if audio.shape[-1] < min_duration * sr:
+            text = ""
+        else:
+            text = model_asr.transcribe(f.name)["text"].replace("▁", " ")
         print(text)
         sentence_bleu_score = bleu_metric.compute(
             predictions=[text],

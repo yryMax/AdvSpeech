@@ -125,11 +125,11 @@ if __name__ == "__main__":
         return raw_data["source_waveform"]
 
     root_dir = "./sampled_pair"
-    dataset = AudioDataset(root_dir, sample_rate=16000)
-    transformed_dataset = TransformedAudioDataset(
-        dataset, mock_transform_fn, "spark_advspeechv2"
-    )
-    # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech")
+    dataset = AudioDataset(root_dir, sample_rate=22050)
+    # transformed_dataset = TransformedAudioDataset(
+    #    dataset, mock_transform_fn, "spark_advspeechv2"
+    # )
+    advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech_v2")
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
@@ -138,13 +138,13 @@ if __name__ == "__main__":
     #    dataset, advspeechv2_runner, "adv_speech_spark08"
     # )
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
-    """
+
     cosyvoice = CosyVoiceSynthesizer(
         os.path.abspath("./external_repos/CosyVoice"),
         config["effectiveness"],
         dataset.sample_rate,
     )
-
+    """
     openvoice = OpenVoiceSynthesizer(
         os.path.abspath("./external_repos/OpenVoice"),
         config["effectiveness"],
@@ -164,6 +164,6 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
-    pipeline = BenchmarkPipeline(transformed_dataset, sparktts)
+    pipeline = BenchmarkPipeline(advspeech, cosyvoice)
     pipeline.run_effectiveness()
     pipeline.run_fidelity()
