@@ -122,16 +122,14 @@ if __name__ == "__main__":
 
     root_dir = "./sampled_pair"
     dataset = AudioDataset(root_dir)  # 22050
-    # transformed_dataset = TransformedAudioDataset(
-    #    dataset, mock_transform_fn, "spark_advspeechv2"
-    # )
+    transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "raw")
     # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech_v2")
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
-    safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
+    # safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
     # advspeech_v2 = TransformedAudioDataset(
-    #    dataset, advspeechv2_runner, "adv_speech_spark08"
+    #    dataset, advspeechv2_runner, "spark_advspeechv2"
     # )
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
 
@@ -160,6 +158,7 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
-    pipeline = BenchmarkPipeline(safespeech, sparktts)
+    # pipeline = BenchmarkPipeline(advspeech_v2, cosyvoice)
+    pipeline = BenchmarkPipeline(transformed_dataset, cosyvoice, sparktts)
     pipeline.run_effectiveness()
-    pipeline.run_fidelity()
+    # pipeline.run_fidelity()
