@@ -23,3 +23,6 @@
 [submodule "external_repos/Spark-TTS"]
 	path = external_repos/Spark-TTS
 	url = https://github.com/yryMax/Spark-TTS.git
+[submodule "external_repos/VALL-E-X"]
+	path = external_repos/VALL-E-X
+	url = https://github.com/yryMax/VALL-E-X.git
