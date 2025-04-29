@@ -51,7 +51,6 @@ class TransformedAudioDataset(Dataset):
             new_wave = self.transform_fn(
                 raw_data, sample_rate=self.base_dataset.sample_rate
             )
-            print(new_wave.shape, raw_data["source_waveform"].shape)
 
         min_len = min(new_wave.shape[-1], raw_data["source_waveform"].shape[-1])
         threshold = 10

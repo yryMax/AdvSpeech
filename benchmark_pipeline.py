@@ -121,16 +121,16 @@ if __name__ == "__main__":
         return raw_data["source_waveform"]
 
     root_dir = "./sampled_pair"
-    dataset = AudioDataset(root_dir)  # 22050
-    transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "raw")
+    dataset = AudioDataset(root_dir, 24000)  # 22050
+    # transformed_dataset = TransformedAudioDataset(dataset, mock_transform_fn, "raw")
     # advspeech = TransformedAudioDataset(dataset, advspeech_runner, "adv_speech_v2")
     # antifake_speech_dataset = TransformedAudioDataset(
     #    dataset, antifake_runner, "antifake"
     # )
     # safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
-    # advspeech_v2 = TransformedAudioDataset(
-    #    dataset, advspeechv2_runner, "spark_advspeechv2"
-    # )
+    advspeech_v2 = TransformedAudioDataset(
+        dataset, advspeechv2_runner, "valle_advspeech003"
+    )
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
 
     cosyvoice = CosyVoiceSynthesizer(
@@ -158,7 +158,13 @@ if __name__ == "__main__":
         dataset.sample_rate,
     )
 
+    valle = VALLESynthesizer(
+        os.path.abspath("./external_repos/VALL-E-X"),
+        config["effectiveness"],
+        dataset.sample_rate,
+    )
+
     # pipeline = BenchmarkPipeline(advspeech_v2, cosyvoice)
-    pipeline = BenchmarkPipeline(transformed_dataset, cosyvoice, sparktts)
+    pipeline = BenchmarkPipeline(advspeech_v2, valle)
     pipeline.run_effectiveness()
-    # pipeline.run_fidelity()
+    pipeline.run_fidelity()
