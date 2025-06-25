@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # )
     # safespeech = TransformedAudioDataset(dataset, safespecch_runner, "safespeech")
     advspeech_v2 = TransformedAudioDataset(
-        dataset, advspeechv2_runner, "valle_advspeech003"
+        dataset, advspeechv2_runner, "valle_advspeech004"
     )
     config = yaml.load(open("./configs/experiment_config.yaml"), Loader=yaml.FullLoader)
 
