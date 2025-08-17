@@ -4,6 +4,9 @@ title: "Audio Samples Demo"
 date:   2024-06-16 17:50:00
 ---
 # AdvSpeech V2
+![threat model](./pngs/threat_model.png)
+
+
 The newest solution, it's white box(for now) and based on the gradient, we benchmarked it on Cosyvoice and Spark-TTS.
 ### Spark-TTS
 <table>
